@@ -4,8 +4,8 @@ import Link from "next/link";
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-black text-white rounded-2xl shadow-lg w-full max-w-md p-8">
+    <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="bg-[#181818] text-white rounded-2xl shadow-lg w-full max-w-md p-8">
         <h2 className="text-3xl font-bold text-center text-yellow-400">Crear Cuenta</h2>
         <p className="text-sm text-center text-yellow-500 mt-1 mb-6">Únete a la familia MAMBA CLUB</p>
 
