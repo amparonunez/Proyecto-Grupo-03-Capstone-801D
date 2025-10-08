@@ -6,6 +6,7 @@ import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
 import Image from "next/image";
 import { useState } from "react";
+import BasketballIcon from '@/app/ball-of-basketball.svg'
 
 
 export default function HomePage() {
@@ -32,7 +33,14 @@ export default function HomePage() {
 
         {/* Icono de basket */}
         <div className="flex justify-center my-6">
-          <Volleyball size={56} className="text-yellow-400" />
+          {/* <Volleyball size={56} className="text-yellow-400" /> */}
+                <Image
+      src="/img/ball-of-basketball.svg"
+      alt="Mamba Logo"
+      width={50}
+      height={50}
+        className="yellow-filter"
+    />
         </div>
 
         {/* Botones */}
