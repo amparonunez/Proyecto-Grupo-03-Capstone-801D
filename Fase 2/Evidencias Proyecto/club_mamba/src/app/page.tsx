@@ -1,20 +1,19 @@
 "use client";
 
-import { Plus, Ban, Newspaper, Volleyball} from "lucide-react";
+import { Plus, Ban, Newspaper} from "lucide-react";
 import Button from "@/components/ui/button";
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
 import Image from "next/image";
 import { useState } from "react";
-import BasketballIcon from '@/app/ball-of-basketball.svg'
 
 
 export default function HomePage() {
     // Estado para el carrusel
   const images = [
-    "/images/team1.jpg",
-    "/images/team2.jpg",
-    "/images/team3.jpg",
+    "/img/18771c82-8f10-42a2-9320-e79c36d6efab.jpeg",
+    "/img/69908af0-cdee-4057-98e5-5d526e9f0604.jpeg",
+    "/img/209780b0-7881-4e1a-8fa6-e6bedccd99b7.jpeg",
   ];
   const [current, setCurrent] = useState(0);
 
@@ -33,7 +32,6 @@ export default function HomePage() {
 
         {/* Icono de basket */}
         <div className="flex justify-center my-6">
-          {/* <Volleyball size={56} className="text-yellow-400" /> */}
                 <Image
       src="/img/ball-of-basketball.svg"
       alt="Mamba Logo"
@@ -60,7 +58,7 @@ export default function HomePage() {
       </section>
 
        {/* Acerca del Club */}
-      <section className="py-16 px-6 md:px-20 text-center md:text-left flex flex-col md:flex-row items-center gap-12">
+      <section className="py-16 px-6 md:px-20 text-center md:text-left flex flex-col md:flex-row items-center gap-100">
         <div className="md:w-1/2">
           <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">Acerca del Club</h3>
           <p className="text-gray-700 leading-relaxed">
@@ -76,10 +74,10 @@ export default function HomePage() {
         </div>
         <div className="md:w-1/2">
           <Image
-            src="/images/club.jpg"
+            src="/img/1236e07c-a373-4d8c-bcb6-b08ea22daee7.jpeg"
             alt="Mamba Club"
-            width={500}
-            height={300}
+            width={400}
+            height={200}
             className="rounded-2xl shadow-lg"/>
         </div>
       </section>
