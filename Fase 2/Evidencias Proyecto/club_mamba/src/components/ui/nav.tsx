@@ -4,12 +4,58 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { User } from "lucide-react";
 import Image from "next/image";
+import { supabase } from "@/lib/supabaseClient";
 
 const Navbar = () => {
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [usuario, setUsuario] = useState(null); // guarda el usuario autenticado
+  const [nombre, setNombre] = useState(localStorage.getItem("nombreUsuario") || ""); // ⚡ carga instantánea
   const menuRef = useRef(null);
 
-  // Cierra el menú al hacer clic fuera
+  
+  // 🔹 Obtener sesión y datos del usuario
+ useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUsuario(user);
+
+        // si no hay nombre almacenado, lo consultamos
+        if (!localStorage.getItem("nombreUsuario")) {
+          const { data, error } = await supabase
+            .from("usuarios")
+            .select("nombre")
+            .eq("id", user.id)
+            .single();
+
+          if (!error && data) {
+            setNombre(data.nombre);
+            localStorage.setItem("nombreUsuario", data.nombre);
+          }
+        }
+      }
+    };
+
+    fetchUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        setUsuario(null);
+        setNombre("");
+        localStorage.removeItem("nombreUsuario");
+      }
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem("nombreUsuario");
+    setUsuario(null);
+    setNombre("");
+  };
+  // 🔹 Cierra el menú al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -19,6 +65,7 @@ const Navbar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
 
   return (
     <nav className="bg-black text-white px-15 py-4 flex justify-between items-center border-b border-white">
@@ -55,47 +102,54 @@ const Navbar = () => {
           Usuarios
         </Link>
 
-        {/* Menú de usuario */}
+     {/* Menú de usuario */}
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuAbierto(!menuAbierto)}
-            className="flex items-center gap-1 hover:text-yellow-400 transition"
+            className="flex items-center gap-2 hover:text-yellow-400 transition"
           >
             <User size={22} />
+            {usuario && <span className="text-sm font-semibold">{nombre}</span>}
           </button>
 
           {menuAbierto && (
             <div className="absolute right-0 mt-3 w-48 bg-[#181818] border border-gray-700 rounded-xl shadow-lg animate-fadeIn">
               <ul className="flex flex-col text-sm font-medium">
-                <li>
-                  <Link
-                    href="/pages/login"
-                    className="block px-4 py-3 hover:bg-yellow-500 hover:text-black rounded-t-xl transition"
-                    onClick={() => setMenuAbierto(false)}
-                  >
-                    Logearse
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/pages/perfil"
-                    className="block px-4 py-3 hover:bg-yellow-500 hover:text-black transition"
-                    onClick={() => setMenuAbierto(false)}
-                  >
-                    Ver Perfil
-                  </Link>
-                </li>
-                <li>
-                  <button
-                    onClick={() => {
-                      setMenuAbierto(false);
-                      alert("Sesión cerrada correctamente.");
-                    }}
-                    className="w-full text-left px-4 py-3 hover:bg-yellow-500 hover:text-black rounded-b-xl transition"
-                  >
-                    Cerrar Sesión
-                  </button>
-                </li>
+                {/* Solo mostrar "Iniciar Sesion" si NO está autenticado */}
+                {!usuario && (
+                  <li>
+                    <Link
+                      href="/pages/login"
+                      className="block px-4 py-3 hover:bg-yellow-500 hover:text-black rounded-t-xl transition"
+                      onClick={() => setMenuAbierto(false)}
+                    >
+                      Iniciar Sesión
+                    </Link>
+                  </li>
+                )}
+
+                {/* Mostrar perfil y cerrar sesión si hay usuario */}
+                {usuario && (
+                  <>
+                    <li>
+                      <Link
+                        href="/pages/perfil"
+                        className="block px-4 py-3 hover:bg-yellow-500 hover:text-black transition"
+                        onClick={() => setMenuAbierto(false)}
+                      >
+                        Ver Perfil
+                      </Link>
+                    </li>
+                    <li>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-3 hover:bg-yellow-500 hover:text-black rounded-b-xl transition"
+                      >
+                        Cerrar Sesión
+                      </button>
+                    </li>
+                  </>
+                )}
               </ul>
             </div>
           )}

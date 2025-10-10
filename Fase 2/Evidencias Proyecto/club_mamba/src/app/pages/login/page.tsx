@@ -33,6 +33,15 @@ export default function LoginPage() {
       setLoading(false);
       return;
     }
+    const { data: usuario, error: errorUsuario } = await supabase
+      .from("usuarios")
+      .select("nombre")
+      .eq("id", data.user.id)
+      .single();
+
+    if (!errorUsuario && usuario) {
+      localStorage.setItem("nombreUsuario", usuario.nombre); // ⚡ Guardamos para el Navbar
+    }
 
     // Si el login es exitoso
     setLoading(false);
