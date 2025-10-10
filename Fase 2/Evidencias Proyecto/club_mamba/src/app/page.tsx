@@ -10,9 +10,9 @@ import { useState, useEffect } from "react";
 export default function HomePage() {
   // Estado para el carrusel
   const images = [
-    "/img/3aaddf9b-8ac2-426d-be63-4ed751736afc.jpeg",
+    "/img/3aaddf9b-8ac2-426d-be63-4ed751736afc.jpg",
     "/img/74a242f6-6f3d-4deb-8bed-02922fcf3dc2.jpeg",
-    "/img/639e4c0a-3cb3-4ce9-87dd-b13372294fa3.jpeg",
+    "/img/639e4c0a-3cb3-4ce9-87dd-b13372294fa3.jpg",
   ];
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
