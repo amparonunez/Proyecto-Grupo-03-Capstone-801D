@@ -2,6 +2,7 @@
 
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
+import Link from "next/link";
 
 export default function NoticiasPage() {
   return (
@@ -43,10 +44,10 @@ export default function NoticiasPage() {
 
         {/* Botón para agregar noticias */}
         <div className="flex justify-center mt-10">
-          <button
-            className="bg-yellow-500 text-black font-semibold px-6 py-3 rounded-full shadow-md hover:bg-yellow-400 transition"
-          >
+          <button className="bg-yellow-500 text-black font-semibold px-6 py-3 rounded-full shadow-md hover:bg-yellow-400 transition">
+            <Link href="/pages/crear_noticias">
             Agregar noticias
+            </Link>
           </button>
         </div>
       </main>

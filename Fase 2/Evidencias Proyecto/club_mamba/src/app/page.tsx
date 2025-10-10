@@ -6,6 +6,7 @@ import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function HomePage() {
   // Estado para el carrusel
@@ -58,16 +59,22 @@ export default function HomePage() {
         {/* Botones */}
         <div className="flex flex-wrap justify-center gap-4 mt-6">
           <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
+            <Link href="/pages/entrenamientos_partidos" className="flex items-center gap-2">
             <Ban size={18} /> Entrenamientos
+            </Link>
           </Button>
 
           <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
+            <Link href="/pages/asistencia" className="flex items-center gap-2">
             <Plus size={18} /> Registrar Asistencia
+            </Link>
           </Button>
 
           <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg hover:bg-yellow-500 transition">
+            <Link href="/pages/noticias" className="flex items-center gap-2">
             <Newspaper size={18} />
             Ver Noticias
+            </Link>
           </Button>
         </div>
       </section>

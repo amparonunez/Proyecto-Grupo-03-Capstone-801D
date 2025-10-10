@@ -32,9 +32,6 @@ const Navbar = () => {
         <Link href="/pages/asistencia" className="hover:text-yellow-400">
           Asistencia
         </Link>
-        <Link href="/pages/noticias" className="hover:text-yellow-400">
-          Noticias
-        </Link>
         <Link
           href="/pages/usuarios"
           className="hover:text-yellow-400 flex items-center gap-1"
