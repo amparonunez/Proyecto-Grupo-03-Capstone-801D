@@ -5,6 +5,7 @@ import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
 import Image from "next/image";
 import { useState } from "react";
+import Link from "next/link";
 
 
 
@@ -87,7 +88,9 @@ export default function PefilPage() {
               {/* Botón editar */}
               <div className="mt-10">
                 <button className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-2 px-6 rounded-lg transition">
+                  <Link href="/pages/editar_perfil">
                   Editar Perfil
+                  </Link>
                 </button>
               </div>
             </>
