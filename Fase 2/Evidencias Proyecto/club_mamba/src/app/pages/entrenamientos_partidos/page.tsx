@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
 import { Calendar, MapPin, Clock, Dumbbell, Trophy } from "lucide-react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function EntrenamientosPage() {
   const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
+  const [rol, setRol] = useState(null);
 
   const eventos = [
     {
@@ -34,7 +36,35 @@ export default function EntrenamientosPage() {
       icono: <Dumbbell className="w-8 h-8 text-yellow-400" />,
     },
   ];
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
+      if (userError || !user) {
+        console.log("No hay usuario logueado");
+        return;
+      }
+
+      const res = await fetch("/api/usuarios/rol", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: user.id }),
+      });
+
+      const result = await res.json();
+
+      if (res.ok && result.rol) {
+        setRol(result.rol);
+      } else {
+        console.error(result.error);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       <Nav />
@@ -67,11 +97,13 @@ export default function EntrenamientosPage() {
           </div>
         </section>
         <div className="flex justify-center mt-10">
-          <button className="bg-yellow-500 text-black font-semibold px-6 py-3 rounded-full shadow-md hover:bg-yellow-400 transition">
-            <Link href="/pages/crear_partido_entrenamiento">
-            Agregar evento
-            </Link>
-          </button>
+          {rol === "entrenador" && (
+            <button className="bg-yellow-500 text-black font-semibold px-6 py-3 rounded-full shadow-md hover:bg-yellow-400 transition">
+              <Link href="/pages/crear_partido_entrenamiento">
+                Agregar evento
+              </Link>
+            </button>
+          )}
         </div>
       </main>
 

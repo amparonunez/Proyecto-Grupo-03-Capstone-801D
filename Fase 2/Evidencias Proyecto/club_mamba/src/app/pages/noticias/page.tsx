@@ -3,8 +3,41 @@
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function NoticiasPage() {
+  const [rol, setRol] = useState(null);
+
+  useEffect(() => {
+      const fetchUserRole = async () => {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+  
+        if (userError || !user) {
+          console.log("No hay usuario logueado");
+          return;
+        }
+  
+        const res = await fetch("/api/usuarios/rol", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: user.id }),
+        });
+  
+        const result = await res.json();
+  
+        if (res.ok && result.rol) {
+          setRol(result.rol);
+        } else {
+          console.error(result.error);
+        }
+      };
+  
+      fetchUserRole();
+    }, []);
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Navbar */}
@@ -44,11 +77,11 @@ export default function NoticiasPage() {
 
         {/* Botón para agregar noticias */}
         <div className="flex justify-center mt-10">
+          {rol === 'entrenador' && (
           <button className="bg-yellow-500 text-black font-semibold px-6 py-3 rounded-full shadow-md hover:bg-yellow-400 transition">
-            <Link href="/pages/crear_noticias">
-            Agregar noticias
-            </Link>
+            <Link href="/pages/crear_noticias">Agregar noticias</Link>
           </button>
+          )}
         </div>
       </main>
 
