@@ -9,14 +9,19 @@ import { supabase } from "@/lib/supabaseClient";
 const Navbar = () => {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [usuario, setUsuario] = useState(null); // guarda el usuario autenticado
-  const [nombre, setNombre] = useState(localStorage.getItem("nombreUsuario") || ""); // ⚡ carga instantánea
+  const [nombre, setNombre] = useState(
+    localStorage.getItem("nombreUsuario") || ""
+  ); // ⚡ carga instantánea
   const menuRef = useRef(null);
+  const [rol, setRol] = useState(null);
 
-  
+
   // 🔹 Obtener sesión y datos del usuario
- useEffect(() => {
+  useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         setUsuario(user);
 
@@ -38,6 +43,29 @@ const Navbar = () => {
 
     fetchUser();
 
+    const fetchUserRole = async () => {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.log("No hay usuario logueado");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("usuarios")
+        .select("rol")
+        .eq("id", user.id)
+        .single();
+
+      if (!error && data) {
+        setRol(data.rol);
+      }
+    };
+
+    fetchUserRole();
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") {
         setUsuario(null);
@@ -66,7 +94,6 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-
   return (
     <nav className="bg-black text-white px-15 py-4 flex justify-between items-center border-b border-white">
       {/* Logo */}
@@ -92,17 +119,21 @@ const Navbar = () => {
         <Link href="/pages/agenda" className="hover:text-yellow-400">
           Agenda
         </Link>
+        { (rol === "jugador" || rol === "entrenador") && (
         <Link href="/pages/asistencia" className="hover:text-yellow-400">
           Asistencia
         </Link>
+        )}
+        { rol === "entrenador" && (
         <Link
           href="/pages/usuarios"
           className="hover:text-yellow-400 flex items-center gap-1"
         >
           Usuarios
         </Link>
+        )}
 
-     {/* Menú de usuario */}
+        {/* Menú de usuario */}
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuAbierto(!menuAbierto)}

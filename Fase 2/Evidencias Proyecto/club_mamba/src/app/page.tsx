@@ -7,6 +7,7 @@ import Footer from "@/components/ui/footer";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function HomePage() {
   // Estado para el carrusel
@@ -17,6 +18,34 @@ export default function HomePage() {
   ];
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [rol, setRol] = useState(null); // 👈 rol del usuario
+
+ // --- Obtener rol desde Supabase ---
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.log("No hay usuario logueado");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("usuarios")
+        .select("rol")
+        .eq("id", user.id)
+        .single();
+
+      if (!error && data) {
+        setRol(data.rol);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
 
   const nextSlide = () => {
     if (isAnimating) return;
@@ -58,17 +87,26 @@ export default function HomePage() {
 
         {/* Botones */}
         <div className="flex flex-wrap justify-center gap-4 mt-6">
+          {(rol === "entrenador" || rol === "jugador") && (
           <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
             <Link href="/pages/entrenamientos_partidos" className="flex items-center gap-2">
             <Ban size={18} /> Entrenamientos
             </Link>
           </Button>
+          )}
 
-          <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
-            <Link href="/pages/asistencia" className="flex items-center gap-2">
-            <Plus size={18} /> Registrar Asistencia
-            </Link>
-          </Button>
+        {/* Registrar asistencia (solo entrenadores) */}
+          {rol === "entrenador" && (
+            <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
+              <Link
+                href="/pages/asistencia"
+                className="flex items-center gap-2"
+              >
+                <Plus size={18} /> Registrar Asistencia
+              </Link>
+            </Button>
+          )}
+
 
           <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg hover:bg-yellow-500 transition">
             <Link href="/pages/noticias" className="flex items-center gap-2">
