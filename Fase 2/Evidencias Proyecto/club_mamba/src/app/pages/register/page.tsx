@@ -76,7 +76,7 @@ export default function RegisterPage() {
     }
 
     setLoading(false);
-    window.alert("¡Te registraste con éxito!");
+    window.alert("¡Te registraste con éxito!, Activa tu cuenta desde tu correo e inicia sesión.");
     router.push("/pages/login");
   };
 

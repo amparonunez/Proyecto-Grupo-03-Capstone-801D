@@ -5,6 +5,7 @@ import Link from "next/link";
 import { User } from "lucide-react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -14,6 +15,7 @@ const Navbar = () => {
   ); // ⚡ carga instantánea
   const menuRef = useRef(null);
   const [rol, setRol] = useState(null);
+  const router = useRouter();
 
   // 🔹 Obtener sesión y datos del usuario
   useEffect(() => {
@@ -86,6 +88,10 @@ const Navbar = () => {
     localStorage.removeItem("nombreUsuario");
     setUsuario(null);
     setNombre("");
+
+    router.push("/");
+
+    window.location.reload(); // recarga para limpiar estado
   };
   // 🔹 Cierra el menú al hacer clic fuera
   useEffect(() => {
