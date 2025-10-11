@@ -20,7 +20,7 @@ export default function HomePage() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [rol, setRol] = useState(null); // 👈 rol del usuario
 
- // --- Obtener rol desde Supabase ---
+  // --- Obtener rol desde Supabase ---
   useEffect(() => {
     const fetchUserRole = async () => {
       const {
@@ -33,14 +33,18 @@ export default function HomePage() {
         return;
       }
 
-      const { data, error } = await supabase
-        .from("usuarios")
-        .select("rol")
-        .eq("id", user.id)
-        .single();
+      const res = await fetch("/api/usuarios/rol", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: user.id }),
+      });
 
-      if (!error && data) {
-        setRol(data.rol);
+      const result = await res.json();
+
+      if (res.ok && result.rol) {
+        setRol(result.rol);
+      } else {
+        console.error(result.error);
       }
     };
 
@@ -60,8 +64,6 @@ export default function HomePage() {
     setTimeout(() => setIsAnimating(false), 500);
     setCurrent((prev) => (prev - 1 + images.length) % images.length);
   };
-
-  
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -88,14 +90,17 @@ export default function HomePage() {
         {/* Botones */}
         <div className="flex flex-wrap justify-center gap-4 mt-6">
           {(rol === "entrenador" || rol === "jugador") && (
-          <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
-            <Link href="/pages/entrenamientos_partidos" className="flex items-center gap-2">
-            <Ban size={18} /> Entrenamientos
-            </Link>
-          </Button>
+            <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
+              <Link
+                href="/pages/entrenamientos_partidos"
+                className="flex items-center gap-2"
+              >
+                <Ban size={18} /> Entrenamientos
+              </Link>
+            </Button>
           )}
 
-        {/* Registrar asistencia (solo entrenadores) */}
+          {/* Registrar asistencia (solo entrenadores) */}
           {rol === "entrenador" && (
             <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
               <Link
@@ -107,11 +112,10 @@ export default function HomePage() {
             </Button>
           )}
 
-
           <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg hover:bg-yellow-500 transition">
             <Link href="/pages/noticias" className="flex items-center gap-2">
-            <Newspaper size={18} />
-            Ver Noticias
+              <Newspaper size={18} />
+              Ver Noticias
             </Link>
           </Button>
         </div>
@@ -158,7 +162,7 @@ export default function HomePage() {
             className="flex transition-transform duration-500 ease-in-out"
             style={{
               transform: `translateX(-${current * 100}%)`,
-              width: `${images.length * 33.6}%`
+              width: `${images.length * 33.6}%`,
             }}
           >
             {images.map((src, index) => (

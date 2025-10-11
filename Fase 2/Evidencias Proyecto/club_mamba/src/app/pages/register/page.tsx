@@ -53,19 +53,23 @@ export default function RegisterPage() {
 
     const user = data.user;
 
-    // 🔹 2. Insertar datos en la tabla usuarios
+    // 🔹 2. Insertar datos en la tabla usuarios atraves de la API con json
     if (user) {
-      const { error: insertError } = await supabase.from("usuarios").insert([
-        {
+      const res = await fetch("/api/usuarios/registro", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           id: user.id,
           nombre: formData.nombre,
           apellidos: formData.apellidos,
           rut: formData.rut,
-        },
-      ]);
+        }),
+      });
 
-      if (insertError) {
-        setError("Error al guardar datos del usuario: " + insertError.message);
+      const result = await res.json();
+
+      if (!res.ok) {
+        setError("Error al guardar datos del usuario: " + result.error);
         setLoading(false);
         return;
       }

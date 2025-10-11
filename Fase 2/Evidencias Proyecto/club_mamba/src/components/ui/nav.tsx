@@ -15,7 +15,6 @@ const Navbar = () => {
   const menuRef = useRef(null);
   const [rol, setRol] = useState(null);
 
-
   // 🔹 Obtener sesión y datos del usuario
   useEffect(() => {
     const fetchUser = async () => {
@@ -54,14 +53,19 @@ const Navbar = () => {
         return;
       }
 
-      const { data, error } = await supabase
-        .from("usuarios")
-        .select("rol")
-        .eq("id", user.id)
-        .single();
+      // ✅ Pedir rol al backend (usa service_role, ignora RLS)
+      const res = await fetch("/api/usuarios/rol", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: user.id }),
+      });
 
-      if (!error && data) {
-        setRol(data.rol);
+      const result = await res.json();
+
+      if (res.ok && result.rol) {
+        setRol(result.rol);
+      } else {
+        console.error(result.error);
       }
     };
 
@@ -119,18 +123,18 @@ const Navbar = () => {
         <Link href="/pages/agenda" className="hover:text-yellow-400">
           Agenda
         </Link>
-        { (rol === "jugador" || rol === "entrenador") && (
-        <Link href="/pages/asistencia" className="hover:text-yellow-400">
-          Asistencia
-        </Link>
+        {(rol === "jugador" || rol === "entrenador") && (
+          <Link href="/pages/asistencia" className="hover:text-yellow-400">
+            Asistencia
+          </Link>
         )}
-        { rol === "entrenador" && (
-        <Link
-          href="/pages/usuarios"
-          className="hover:text-yellow-400 flex items-center gap-1"
-        >
-          Usuarios
-        </Link>
+        {rol === "entrenador" && (
+          <Link
+            href="/pages/usuarios"
+            className="hover:text-yellow-400 flex items-center gap-1"
+          >
+            Usuarios
+          </Link>
         )}
 
         {/* Menú de usuario */}

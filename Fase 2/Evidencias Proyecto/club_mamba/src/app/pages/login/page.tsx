@@ -33,14 +33,22 @@ export default function LoginPage() {
       setLoading(false);
       return;
     }
-    const { data: usuario, error: errorUsuario } = await supabase
-      .from("usuarios")
-      .select("nombre")
-      .eq("id", data.user.id)
-      .single();
+    const user = data.user;
 
-    if (!errorUsuario && usuario) {
-      localStorage.setItem("nombreUsuario", usuario.nombre); // ⚡ Guardamos para el Navbar
+    // 🔹 1. Pedimos los datos del usuario desde el backend (ignora RLS)
+    const res = await fetch("/api/usuarios/datos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: user.id }),
+    });
+
+    const result = await res.json();
+
+    if (res.ok && result.data) {
+      localStorage.setItem("nombreUsuario", result.data.nombre);
+      localStorage.setItem("rolUsuario", result.data.rol);
+    } else {
+      console.error(result.error);
     }
 
     // Si el login es exitoso
@@ -50,8 +58,12 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[black]">
       <div className="bg-[#181818] text-white rounded-2xl shadow-lg w-full max-w-md p-8">
-        <h2 className="text-3xl font-bold text-center text-yellow-400">Iniciar Sesión</h2>
-        <p className="text-sm text-center text-yellow-500 mt-1 mb-6">Bienvenido de nuevo a MAMBA CLUB</p>
+        <h2 className="text-3xl font-bold text-center text-yellow-400">
+          Iniciar Sesión
+        </h2>
+        <p className="text-sm text-center text-yellow-500 mt-1 mb-6">
+          Bienvenido de nuevo a MAMBA CLUB
+        </p>
 
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <input
@@ -84,7 +96,10 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-gray-400 mt-6">
           ¿No tienes una cuenta?{" "}
-          <Link href="/pages/register" className="text-yellow-400 hover:underline">
+          <Link
+            href="/pages/register"
+            className="text-yellow-400 hover:underline"
+          >
             Regístrate aquí
           </Link>
         </p>
