@@ -5,6 +5,7 @@ import Image from "next/image";
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
 import { Camera, Mail, Lock, User } from "lucide-react";
+import AuthGuard from "@/components/AuthGuard";
 
 export default function EditarPerfilPage() {
   const [foto, setFoto] = useState("/img/user-avatar.png");
@@ -37,6 +38,7 @@ export default function EditarPerfilPage() {
   };
 
   return (
+    <AuthGuard allowedRoles={["jugador", "entrenador"]}>
     <div className="min-h-screen bg-black text-white flex flex-col">
       <Nav />
 
@@ -168,5 +170,6 @@ export default function EditarPerfilPage() {
         }
       `}</style>
     </div>
+    </AuthGuard>
   );
 }

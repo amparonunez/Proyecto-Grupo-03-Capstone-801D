@@ -2,6 +2,7 @@
 
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
+import AuthGuard from "@/components/AuthGuard";
 
 export default function VisualizarAsistenciaPage() {
   const evento = {
@@ -27,6 +28,7 @@ export default function VisualizarAsistenciaPage() {
   };
 
   return (
+    <AuthGuard allowedRoles={["entrenador", "jugador"]}>
     <div className="min-h-screen bg-gray-100">
       <Nav />
       <main className="min-h-screen bg-[black] text-white flex justify-center items-center py-16">
@@ -87,5 +89,6 @@ export default function VisualizarAsistenciaPage() {
       </main>
       <Footer />
     </div>
+    </AuthGuard>
   );
 }

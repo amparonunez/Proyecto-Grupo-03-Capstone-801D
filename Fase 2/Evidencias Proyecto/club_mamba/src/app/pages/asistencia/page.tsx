@@ -5,6 +5,7 @@ import Footer from "@/components/ui/footer";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import AuthGuard from "@/components/AuthGuard"
 
 export default function AsistenciaPage() {
   const [rol, setRol] = useState(null);
@@ -55,6 +56,7 @@ export default function AsistenciaPage() {
     fetchUserRole();
   }, []);
   return (
+    <AuthGuard allowedRoles={["entrenador" , "jugador"]}>
     <div className="min-h-screen bg-gray-100">
       {/* Navbar */}
       <Nav />
@@ -99,5 +101,6 @@ export default function AsistenciaPage() {
       {/* Footer */}
       <Footer />
     </div>
+    </AuthGuard>
   );
 }

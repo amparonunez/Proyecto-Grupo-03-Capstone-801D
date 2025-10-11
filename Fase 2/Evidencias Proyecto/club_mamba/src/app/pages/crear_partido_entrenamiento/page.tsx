@@ -4,6 +4,7 @@ import { useState } from "react";
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
 import { CalendarDays, Clock, MapPin, Dumbbell, Trophy, CheckCircle } from "lucide-react";
+import AuthGuard from "@/components/AuthGuard";
 
 export default function CrearEventoPage() {
   const [formData, setFormData] = useState({
@@ -30,6 +31,7 @@ export default function CrearEventoPage() {
   };
 
   return (
+    <AuthGuard allowedRoles={["entrenador"]}>
     <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Navbar */}
       <Nav />
@@ -145,5 +147,6 @@ export default function CrearEventoPage() {
         }
       `}</style>
     </div>
+    </AuthGuard>
   );
 }

@@ -5,6 +5,7 @@ import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import AuthGuard from "@/components/AuthGuard";
 
 
 
@@ -59,6 +60,7 @@ export default function UsuariosPage() {
   ];
 
   return (
+    <AuthGuard allowedRoles={["entrenador"]}>
     <div className="min-h-screen bg-gray-100">
       {/* Navbar */}
       <Nav />
@@ -185,5 +187,6 @@ export default function UsuariosPage() {
     {/* Footer */}
       <Footer />
     </div>
+    </AuthGuard>
   );
 }

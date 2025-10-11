@@ -6,6 +6,7 @@ import Footer from "@/components/ui/footer";
 import { Calendar, MapPin, Clock, Dumbbell, Trophy } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import AuthGuard from "@/components/AuthGuard";
 
 export default function EntrenamientosPage() {
   const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
@@ -66,6 +67,7 @@ export default function EntrenamientosPage() {
     fetchUserRole();
   }, []);
   return (
+    <AuthGuard allowedRoles={["entrenador", "jugador"]}>
     <div className="min-h-screen bg-black text-white flex flex-col">
       <Nav />
 
@@ -108,7 +110,7 @@ export default function EntrenamientosPage() {
       </main>
 
       <Footer />
-
+      
       {/* Modal */}
       {eventoSeleccionado && (
         <div
@@ -173,5 +175,6 @@ export default function EntrenamientosPage() {
         }
       `}</style>
     </div>
+    </AuthGuard>
   );
 }

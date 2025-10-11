@@ -6,6 +6,7 @@ import Footer from "@/components/ui/footer";
 import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
+import AuthGuard from "@/components/AuthGuard";
 
 
 
@@ -13,11 +14,12 @@ export default function PefilPage() {
     const [activeTab, setActiveTab] = useState<"datos" | "estadisticas">("datos");
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Navbar */}
-      <Nav />
-    <div className="min-h-screen bg-black text-white flex flex-col items-center py-12 px-6">
-   
+    <AuthGuard allowedRoles={["jugador", "entrenador"]}>
+      <div className="min-h-screen bg-gray-100">
+        {/* Navbar */}
+        <Nav />
+        <div className="min-h-screen bg-black text-white flex flex-col items-center py-12 px-6">
+
      {/* Contenedor principal */}
       <div className="bg-neutral-900 w-full max-w-4xl rounded-2xl shadow-xl p-10 flex flex-col md:flex-row gap-10 items-center md:items-start">
         {/* Columna izquierda */}
@@ -133,5 +135,6 @@ export default function PefilPage() {
     {/* Footer */}
       <Footer />
     </div>
+    </AuthGuard>
   );
 }

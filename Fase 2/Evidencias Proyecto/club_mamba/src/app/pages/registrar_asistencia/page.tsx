@@ -3,6 +3,7 @@
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
 import { useState, useEffect } from "react";
+import AuthGuard from "@/components/AuthGuard";
 
 export default function AsistenciaPage() {
   const [jugadores, setJugadores] = useState([
@@ -81,6 +82,7 @@ export default function AsistenciaPage() {
   const jugadoresOrdenados = [...jugadores].sort((a, b) => b.puntos - a.puntos);
 
   return (
+    <AuthGuard allowedRoles={["entrenador"]}>
     <div className="min-h-screen bg-gray-100">
       <Nav />
 
@@ -239,5 +241,6 @@ export default function AsistenciaPage() {
 
       <Footer />
     </div>
+    </AuthGuard>
   );
 }

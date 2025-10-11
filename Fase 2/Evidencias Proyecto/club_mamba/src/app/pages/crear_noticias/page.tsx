@@ -4,6 +4,7 @@ import { useState } from "react";
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
 import { Newspaper, CalendarDays, FileText, CheckCircle } from "lucide-react";
+import AuthGuard from "@/components/AuthGuard";
 
 export default function CrearNoticiaPage() {
   const [formData, setFormData] = useState({
@@ -28,6 +29,7 @@ export default function CrearNoticiaPage() {
   };
 
   return (
+    <AuthGuard allowedRoles={["entrenador"]}>
     <div className="min-h-screen bg-black text-white flex flex-col">
       <Nav />
 
@@ -119,5 +121,6 @@ export default function CrearNoticiaPage() {
         }
       `}</style>
     </div>
+    </AuthGuard>
   );
 }
