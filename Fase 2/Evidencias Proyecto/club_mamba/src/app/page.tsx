@@ -137,7 +137,8 @@ export default function HomePage() {
           </p>
           <p className="text-gray-700 mt-4">
             Participamos en campeonatos locales y regionales, promoviendo el
-            deporte como herramienta de integración y desarrollo personal.
+            deporte como herramienta de integración y desarrollo personal. Contamos con una trayectoria de más de 8 años, y estamos comprometidos con el crecimiento
+            deportivo y social de nuestros miembros.
           </p>
         </div>
         <div className="md:w-1/2">
