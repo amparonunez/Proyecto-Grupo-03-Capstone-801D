@@ -48,7 +48,7 @@ export default function CrearNoticiaPage() {
         return;
       }
 
-      const res = await fetch("/api/noticias", {
+      const res = await fetch("/api/noticias/agregar_noticias", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -52,7 +52,7 @@ export default function NoticiasPage() {
   useEffect(() => {
     const fetchNoticias = async () => {
       try {
-        const res = await fetch("/api/ver_noticias");
+        const res = await fetch("/api/noticias/ver_noticias");
         const result = await res.json();
 
         if (res.ok) {
@@ -91,7 +91,7 @@ const handleDelete = async (id: number) => {
     }
 
     // 📡 Llamar a la API con userId
-    const res = await fetch("/api/borrar_noticias", {
+    const res = await fetch("/api/noticias/borrar_noticias", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, userId: user.id }),
