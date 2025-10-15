@@ -21,8 +21,8 @@ const Footer = () => {
           <h4 className="text-yellow-400 font-bold text-lg mb-2">Contacto</h4>
           <ul className="text-gray-400 text-sm space-y-1">
             <li>📍 Melipilla, Chile</li>
-            <li>📧 contacto@mambaclub.cl</li>
-            <li>📞 +56 9 1234 5678</li>
+            <li>📧 mambatesoreria@gmail.com</li>
+            <li>📞 +56 9 78280436</li>
           </ul>
         </div>
 
@@ -30,10 +30,10 @@ const Footer = () => {
         <div>
           <h4 className="text-yellow-400 font-bold text-lg mb-2">Síguenos</h4>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-yellow-400 transition">
+            <a href="https://facebook.com/mambaclub24" className="hover:text-yellow-400 transition">
               <Facebook size={22} />
             </a>
-            <a href="#" className="hover:text-yellow-400 transition">
+            <a href="https://www.instagram.com/mamba_club_melipilla/" className="hover:text-yellow-400 transition">
               <Instagram size={22} />
             </a>
             <a href="#" className="hover:text-yellow-400 transition">
