@@ -4,15 +4,16 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
-import { supabase } from "@/lib/supabaseClient";
 import { motion, AnimatePresence } from "framer-motion";
 import AuthGuard from "@/components/AuthGuard";
 
 export default function UsuariosPage() {
   const [jugadores, setJugadores] = useState<any[]>([]);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [estadisticas, setEstadisticas] = useState<any[]>([]);
 
-   useEffect(() => {
+  // Fetch jugadores
+  useEffect(() => {
     const fetchJugadores = async () => {
       try {
         const res = await fetch("/api/usuarios/ver_usuarios");
@@ -24,9 +25,36 @@ export default function UsuariosPage() {
         console.error("Error cargando jugadores:", err);
       }
     };
-
     fetchJugadores();
   }, []);
+
+  // Fetch estadísticas solo cuando hay jugador seleccionado
+  useEffect(() => {
+    if (!selectedUser) {
+      setEstadisticas([]); // limpiar al cerrar modal
+      return;
+    }
+
+    const fetchEstadisticas = async () => {
+      try {
+        const res = await fetch("/api/usuarios/ver_estadisticas", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ id: selectedUser.id }),
+});
+
+        const json = await res.json();
+
+        if (json.error) throw new Error(json.error);
+        setEstadisticas(json.data);
+      } catch (err) {
+        console.error("Error cargando estadísticas:", err);
+        setEstadisticas([]);
+      }
+    };
+
+    fetchEstadisticas();
+  }, [selectedUser]);
 
   return (
     <AuthGuard allowedRoles={["entrenador"]}>
@@ -142,6 +170,22 @@ export default function UsuariosPage() {
                       {selectedUser.nivel}
                     </p>
                   </div>
+
+                  {estadisticas.length > 0 && (
+                    <div className="text-gray-300 space-y-2">
+                      <h3 className="text-yellow-400 font-semibold text-xl mb-2">Estadísticas</h3>
+                      {estadisticas.map((est) => (
+                        <div key={est.id} className="grid grid-cols-2 gap-2">
+                          <p><span className="font-semibold text-white">Puntos:</span> {est.puntos}</p>
+                          <p><span className="font-semibold text-white">Rebotes:</span> {est.rebotes}</p>
+                          <p><span className="font-semibold text-white">Asistencias:</span> {est.asistencias}</p>
+                          <p><span className="font-semibold text-white">Robos:</span> {est.robos}</p>
+                          <p><span className="font-semibold text-white">Bloqueos:</span> {est.bloqueos}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                 </motion.div>
               </motion.div>
             )}
