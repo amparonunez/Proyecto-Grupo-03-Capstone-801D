@@ -10,51 +10,90 @@ import AuthGuard from "@/components/AuthGuard";
 export default function UsuariosPage() {
   const [jugadores, setJugadores] = useState<any[]>([]);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
-  const [estadisticas, setEstadisticas] = useState<any[]>([]);
+  const [estadisticas, setEstadisticas] = useState<any | null>(null);
 
-  // Fetch jugadores
+  // Cargar jugadores con estado de inscripción
   useEffect(() => {
     const fetchJugadores = async () => {
       try {
         const res = await fetch("/api/usuarios/ver_usuarios");
         const json = await res.json();
-
         if (json.error) throw new Error(json.error);
-        setJugadores(json.data);
+
+        // Consultar inscripciones de cada jugador
+        const jugadoresConInscripcion = await Promise.all(
+          json.data.map(async (jugador: any) => {
+            try {
+              const resInscripcion = await fetch("/api/usuarios/ver_inscripciones", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ usuario_id: jugador.id }),
+              });
+              const dataIns = await resInscripcion.json();
+              return { ...jugador, inscrito: dataIns.data?.inscrito ?? false };
+            } catch {
+              return { ...jugador, inscrito: false };
+            }
+          })
+        );
+
+        setJugadores(jugadoresConInscripcion);
       } catch (err) {
         console.error("Error cargando jugadores:", err);
       }
     };
+
     fetchJugadores();
   }, []);
 
-  // Fetch estadísticas solo cuando hay jugador seleccionado
+  // Cargar estadísticas del jugador seleccionado
   useEffect(() => {
     if (!selectedUser) {
-      setEstadisticas([]); // limpiar al cerrar modal
+      setEstadisticas(null);
       return;
     }
 
     const fetchEstadisticas = async () => {
       try {
         const res = await fetch("/api/usuarios/ver_estadisticas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: selectedUser.id }),
-      });
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: selectedUser.id }),
+        });
 
         const json = await res.json();
-
         if (json.error) throw new Error(json.error);
         setEstadisticas(json.data);
       } catch (err) {
         console.error("Error cargando estadísticas:", err);
-        setEstadisticas([]);
+        setEstadisticas(null);
       }
     };
 
     fetchEstadisticas();
   }, [selectedUser]);
+
+  // Función para actualizar puesto o nivel
+  const actualizarCampo = async (campo: string, valor: string) => {
+    if (!selectedUser) return;
+    try {
+      await fetch("/api/usuarios/actualizar_puesto_nivel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: selectedUser.id, [campo]: valor }),
+      });
+
+      setSelectedUser((prev: any) => ({ ...prev, [campo]: valor }));
+      // Actualiza también en la lista principal
+      setJugadores((prev) =>
+        prev.map((jug) =>
+          jug.id === selectedUser.id ? { ...jug, [campo]: valor } : jug
+        )
+      );
+    } catch (err) {
+      console.error(`Error actualizando ${campo}:`, err);
+    }
+  };
 
   return (
     <AuthGuard allowedRoles={["entrenador"]}>
@@ -67,6 +106,7 @@ export default function UsuariosPage() {
           <section className="bg-[#181818] w-[900px] rounded-2xl shadow-2xl p-10 border border-gray-800">
             <div className="flex justify-between text-yellow-400 text-lg font-semibold mb-4 border-b border-gray-700 pb-2">
               <span>Jugador</span>
+              <span>Estado</span>
               <span>Nivel</span>
             </div>
 
@@ -104,6 +144,16 @@ export default function UsuariosPage() {
                       )}
                       <span className="font-medium">{`${jugador.nombre} ${jugador.apellidos}`}</span>
                     </div>
+
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-3 h-3 rounded-full ${
+                          jugador.inscrito ? "bg-green-500" : "bg-red-500"
+                        }`}
+                        title={jugador.inscrito ? "Inscrito" : "No inscrito"}
+                      ></div>
+                    </div>
+
                     <span className="text-yellow-400 capitalize">
                       {jugador.nivel}
                     </span>
@@ -160,31 +210,87 @@ export default function UsuariosPage() {
                     </h2>
                   </div>
 
-                  <div className="text-gray-300 space-y-2 mb-6">
-                    <p>
-                      <span className="font-semibold text-white">Puesto: </span>
-                      {selectedUser.puesto}
-                    </p>
-                    <p>
-                      <span className="font-semibold text-white">Nivel: </span>
-                      {selectedUser.nivel}
-                    </p>
+                  {/* Select editable de puesto */}
+                  <div className="mb-4">
+                    <label className="block text-white font-semibold mb-1">
+                      Puesto:
+                    </label>
+                    <select
+                      value={selectedUser.puesto}
+                      disabled={!selectedUser.inscrito} 
+                      onChange={(e) =>
+                        actualizarCampo("puesto", e.target.value)
+                      }
+                      className="bg-[#1E1E1E] border border-gray-700 rounded-lg px-3 py-2 w-full"
+                    >
+                      <option value="base">Base</option>
+                      <option value="escolta">Escolta</option>
+                      <option value="alero">Alero</option>
+                      <option value="ala-pívot">Ala-Pívot</option>
+                      <option value="pívot">Pívot</option>
+                    </select>
                   </div>
 
-                 {estadisticas && (
-  <div className="text-gray-300 space-y-2">
-    <h3 className="text-yellow-400 font-semibold text-xl mb-2">
-      Estadísticas Totales
-    </h3>
-    <p><span className="font-semibold text-white">Partidos jugados:</span> {estadisticas.partidos_jugados}</p>
-    <p><span className="font-semibold text-white">Puntos:</span> {estadisticas.total_puntos}</p>
-    <p><span className="font-semibold text-white">Rebotes:</span> {estadisticas.total_rebotes}</p>
-    <p><span className="font-semibold text-white">Asistencias:</span> {estadisticas.total_asistencias}</p>
-    <p><span className="font-semibold text-white">Robos:</span> {estadisticas.total_robos}</p>
-    <p><span className="font-semibold text-white">Bloqueos:</span> {estadisticas.total_bloqueos}</p>
-  </div>
-)}
+                  {/* Select editable de nivel */}
+                  <div className="mb-6">
+                    <label className="block text-white font-semibold mb-1">
+                      Nivel:
+                    </label>
+                    <select
+                      value={selectedUser.nivel}
+                      disabled={!selectedUser.inscrito}
+                      onChange={(e) =>
+                        actualizarCampo("nivel", e.target.value)
+                      }
+                      className="bg-[#1E1E1E] border border-gray-700 rounded-lg px-3 py-2 w-full"
+                    >
+                      <option value="novato">Novato</option>
+                      <option value="intermedio">Intermedio</option>
+                      <option value="avanzado">Avanzado</option>
+                      <option value="elite">Elite</option>
+                    </select>
+                  </div>
 
+                  {/* Estadísticas totales */}
+                  {estadisticas && (
+                    <div className="text-gray-300 space-y-2">
+                      <h3 className="text-yellow-400 font-semibold text-xl mb-2">
+                        Estadísticas Totales
+                      </h3>
+                      <p>
+                        <span className="font-semibold text-white">
+                          Partidos jugados:
+                        </span>{" "}
+                        {estadisticas.partidos_jugados}
+                      </p>
+                      <p>
+                        <span className="font-semibold text-white">Puntos:</span>{" "}
+                        {estadisticas.total_puntos}
+                      </p>
+                      <p>
+                        <span className="font-semibold text-white">
+                          Rebotes:
+                        </span>{" "}
+                        {estadisticas.total_rebotes}
+                      </p>
+                      <p>
+                        <span className="font-semibold text-white">
+                          Asistencias:
+                        </span>{" "}
+                        {estadisticas.total_asistencias}
+                      </p>
+                      <p>
+                        <span className="font-semibold text-white">Robos:</span>{" "}
+                        {estadisticas.total_robos}
+                      </p>
+                      <p>
+                        <span className="font-semibold text-white">
+                          Bloqueos:
+                        </span>{" "}
+                        {estadisticas.total_bloqueos}
+                      </p>
+                    </div>
+                  )}
                 </motion.div>
               </motion.div>
             )}
