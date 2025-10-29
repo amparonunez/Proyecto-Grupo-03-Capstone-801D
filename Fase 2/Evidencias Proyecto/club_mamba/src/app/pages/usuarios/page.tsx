@@ -38,10 +38,10 @@ export default function UsuariosPage() {
     const fetchEstadisticas = async () => {
       try {
         const res = await fetch("/api/usuarios/ver_estadisticas", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ id: selectedUser.id }),
-});
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: selectedUser.id }),
+      });
 
         const json = await res.json();
 
@@ -171,20 +171,19 @@ export default function UsuariosPage() {
                     </p>
                   </div>
 
-                  {estadisticas.length > 0 && (
-                    <div className="text-gray-300 space-y-2">
-                      <h3 className="text-yellow-400 font-semibold text-xl mb-2">Estadísticas</h3>
-                      {estadisticas.map((est) => (
-                        <div key={est.id} className="grid grid-cols-2 gap-2">
-                          <p><span className="font-semibold text-white">Puntos:</span> {est.puntos}</p>
-                          <p><span className="font-semibold text-white">Rebotes:</span> {est.rebotes}</p>
-                          <p><span className="font-semibold text-white">Asistencias:</span> {est.asistencias}</p>
-                          <p><span className="font-semibold text-white">Robos:</span> {est.robos}</p>
-                          <p><span className="font-semibold text-white">Bloqueos:</span> {est.bloqueos}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                 {estadisticas && (
+  <div className="text-gray-300 space-y-2">
+    <h3 className="text-yellow-400 font-semibold text-xl mb-2">
+      Estadísticas Totales
+    </h3>
+    <p><span className="font-semibold text-white">Partidos jugados:</span> {estadisticas.partidos_jugados}</p>
+    <p><span className="font-semibold text-white">Puntos:</span> {estadisticas.total_puntos}</p>
+    <p><span className="font-semibold text-white">Rebotes:</span> {estadisticas.total_rebotes}</p>
+    <p><span className="font-semibold text-white">Asistencias:</span> {estadisticas.total_asistencias}</p>
+    <p><span className="font-semibold text-white">Robos:</span> {estadisticas.total_robos}</p>
+    <p><span className="font-semibold text-white">Bloqueos:</span> {estadisticas.total_bloqueos}</p>
+  </div>
+)}
 
                 </motion.div>
               </motion.div>
