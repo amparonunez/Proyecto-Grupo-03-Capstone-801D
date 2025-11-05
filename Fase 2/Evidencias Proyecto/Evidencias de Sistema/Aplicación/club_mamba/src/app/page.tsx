@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import Toast from "@/components/ui/Toast";
 
 export default function HomePage() {
   // Estado para el carrusel
@@ -19,6 +20,8 @@ export default function HomePage() {
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [rol, setRol] = useState(null); // 👈 rol del usuario
+  const [showToast, setShowToast] = useState(true); // mostrar apenas entra la pagina
+  const message = "Jugador Lucas Benavides lesionado de rodilla, fuera por 2 semanas";
 
   // --- Obtener rol desde Supabase ---
   useEffect(() => {
@@ -49,6 +52,11 @@ export default function HomePage() {
     };
 
     fetchUserRole();
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowToast(false), 5000);
+    return () => clearTimeout(timer);
   }, []);
 
   const nextSlide = () => {
@@ -198,15 +206,21 @@ export default function HomePage() {
               <button
                 key={index}
                 onClick={() => setCurrent(index)}
-                className={`w-3 h-3 rounded-full ${
-                  index === current ? "bg-yellow-400" : "bg-gray-400"
-                }`}
+                className={`w-3 h-3 rounded-full ${index === current ? "bg-yellow-400" : "bg-gray-400"
+                  }`}
               />
             ))}
           </div>
         </div>
       </section>
       <Footer />
+      {showToast && (
+        <Toast
+          message={message}
+          onClose={() => setShowToast(false)}
+        />
+      )}
+
     </div>
   );
 }
