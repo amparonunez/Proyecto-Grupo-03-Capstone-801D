@@ -16,23 +16,38 @@ export default function PerfilPage() {
 
   useEffect(() => {
     const fetchPerfil = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
 
-      const res = await fetch(`/api/perfil/ver_perfil?user_id=${user.id}`);
-      const json = await res.json();
+        const res = await fetch(`/api/perfil/ver_perfil?user_id=${user.id}`);
+        const json = await res.json();
 
-      if (res.ok) {
-        setUsuario({ ...json.usuario, email: user.email });
+        if (!res.ok) throw new Error(json.error || "Error al cargar perfil");
+
+        // 👇️ Agregamos la URL de foto pública (si existe)
+        setUsuario({
+          ...json.usuario,
+          email: user.email,
+          foto_perfil: json.usuario?.foto_perfil || null,
+        });
+
         setStats(json.total);
         setEntrenador(json.entrenador);
-      } else {
-        console.error(json.error);
+      } catch (err) {
+        console.error("Error al cargar perfil:", err);
       }
     };
 
     fetchPerfil();
   }, []);
+
+  const fotoSrc =
+    usuario?.foto_perfil && usuario.foto_perfil.trim() !== ""
+      ? usuario.foto_perfil
+      : "/img/user-avatar.png";
 
   return (
     <AuthGuard allowedRoles={["jugador", "entrenador"]}>
@@ -45,11 +60,12 @@ export default function PerfilPage() {
             <div className="flex flex-col items-center text-center w-full md:w-1/3">
               <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-yellow-500 mb-4">
                 <Image
-                  src="/img/user-avatar.png"
+                  src={fotoSrc}
                   alt="Foto de perfil"
                   width={160}
                   height={160}
                   className="object-cover"
+                  unoptimized
                 />
               </div>
 
@@ -57,7 +73,9 @@ export default function PerfilPage() {
                 {usuario ? `${usuario.nombre} ${usuario.apellidos}` : "Jugador"}
               </h2>
               <p className="text-sm text-neutral-400 capitalize">
-                {usuario?.rol === "entrenador" ? "Entrenador del club" : usuario?.rol}
+                {usuario?.rol === "entrenador"
+                  ? "Entrenador del club"
+                  : usuario?.rol}
               </p>
 
               {/* Botones de pestañas */}
@@ -94,16 +112,24 @@ export default function PerfilPage() {
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
                     <div className="flex flex-col">
-                      <span className="text-neutral-400 mb-1">Correo electrónico</span>
-                      <span className="font-medium">{usuario?.email || "—"}</span>
+                      <span className="text-neutral-400 mb-1">
+                        Correo electrónico
+                      </span>
+                      <span className="font-medium">
+                        {usuario?.email || "—"}
+                      </span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-neutral-400 mb-1">Puesto</span>
-                      <span className="font-medium capitalize">{usuario?.puesto}</span>
+                      <span className="font-medium capitalize">
+                        {usuario?.puesto}
+                      </span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-neutral-400 mb-1">Nivel</span>
-                      <span className="font-medium capitalize">{usuario?.nivel}</span>
+                      <span className="font-medium capitalize">
+                        {usuario?.nivel}
+                      </span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-neutral-400 mb-1">RUT</span>
@@ -117,7 +143,10 @@ export default function PerfilPage() {
                       <h4 className="text-lg text-yellow-400 font-semibold mb-4">
                         Sección de Entrenador
                       </h4>
-                      <p>Total de entrenamientos: {entrenador.totalEntrenamientos}</p>
+                      <p>
+                        Total de entrenamientos:{" "}
+                        {entrenador.totalEntrenamientos}
+                      </p>
                       <p>Total de partidos: {entrenador.totalPartidos}</p>
 
                       {entrenador.recientes.length > 0 && (
@@ -139,9 +168,12 @@ export default function PerfilPage() {
 
                   {/* Botón editar */}
                   <div className="mt-10">
-                    <button className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-2 px-6 rounded-lg transition">
-                      <Link href="/pages/editar_perfil">Editar Perfil</Link>
-                    </button>
+                    <Link
+                      href="/pages/editar_perfil"
+                      className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-2 px-6 rounded-lg transition inline-block"
+                    >
+                      Editar Perfil
+                    </Link>
                   </div>
                 </>
               ) : (
