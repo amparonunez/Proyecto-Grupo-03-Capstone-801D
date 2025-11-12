@@ -1,92 +1,102 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { Newspaper, CalendarDays } from "lucide-react";
+
+interface Noticia {
+  id: number;
+  titulo: string;
+  contenido: string;
+  fecha: string;
+  imagen?: string;
+}
 
 export default function NoticiasPage() {
-  const [rol, setRol] = useState(null);
+  const [noticias, setNoticias] = useState<Noticia[]>([]);
 
   useEffect(() => {
-      const fetchUserRole = async () => {
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
-  
-        if (userError || !user) {
-          console.log("No hay usuario logueado");
-          return;
-        }
-  
-        const res = await fetch("/api/usuarios/rol", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: user.id }),
-        });
-  
-        const result = await res.json();
-  
-        if (res.ok && result.rol) {
-          setRol(result.rol);
-        } else {
-          console.error(result.error);
-        }
-      };
-  
-      fetchUserRole();
-    }, []);
+    const stored = localStorage.getItem("noticias");
+    if (stored) setNoticias(JSON.parse(stored));
+  }, []);
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
-      {/* Navbar */}
       <Nav />
 
-      {/* Contenido principal */}
-      <main className="flex-grow px-6 py-12 max-w-4xl mx-auto">
-        <h1 className="text-5xl font-extrabold text-center mb-10 text-gray-100">
-          NOTICIAS
+      <main className="flex-grow max-w-6xl mx-auto px-6 py-16">
+        <h1 className="text-5xl font-extrabold text-yellow-400 text-center mb-12">
+          NOTICIAS DEL CLUB
         </h1>
 
-        {/* Tarjeta 1 */}
-        <div className="bg-yellow-500 text-black p-6 rounded-xl mb-6 shadow-lg">
-          <h2 className="text-2xl font-bold mb-3">Anuncio importante</h2>
-          <p className="text-lg mb-4">
-            No habrá entrenamiento esta tarde, ocurrirá próximo viaje,
-            eliminación de noticias. El Ponziha regional.
-          </p>
-          <div className="flex justify-between items-center text-sm font-medium">
-            <span>10 de noviembre de 2023</span>
-            <span>—</span>
+        {noticias.length === 0 ? (
+          <div className="text-center mt-20">
+            <Newspaper className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+            <p className="text-gray-400 text-lg">
+              Aún no se han publicado noticias.  
+              <br />
+              Puedes crear una desde{" "}
+              <a
+                href="/pages/crear_noticias"
+                className="text-yellow-400 underline hover:text-yellow-300"
+              >
+                aquí
+              </a>
+              .
+            </p>
           </div>
-        </div>
-
-        {/* Tarjeta 2 */}
-        <div className="bg-yellow-500 text-black p-6 rounded-xl mb-6 shadow-lg">
-          <h2 className="text-2xl font-bold mb-3">Nueva Equipación</h2>
-          <p className="text-lg mb-4">
-            Próxima incremento de materiales, oportunidades elipsis
-            aproximadamente. Principal región.
-          </p>
-          <div className="flex justify-between items-center text-sm font-medium">
-            <span>10 de noviembre de 2023</span>
-            <span>—</span>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 animate-fadeIn">
+            {noticias.map((noticia) => (
+              <div
+                key={noticia.id}
+                className="bg-[#181818] border border-gray-700 rounded-2xl overflow-hidden shadow-lg hover:scale-[1.02] transition-transform"
+              >
+                {noticia.imagen && (
+                  <img
+                    src={noticia.imagen}
+                    alt={noticia.titulo}
+                    className="w-full h-48 object-cover"
+                  />
+                )}
+                <div className="p-6">
+                  <h2 className="text-2xl font-bold text-yellow-400 mb-2">
+                    {noticia.titulo}
+                  </h2>
+                  <p className="text-gray-300 text-sm mb-4">
+                    {noticia.contenido}
+                  </p>
+                  <div className="flex items-center gap-2 text-gray-400 text-sm">
+                    <CalendarDays className="w-4 h-4" />
+                    <span>{noticia.fecha}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-
-        {/* Botón para agregar noticias */}
-        <div className="flex justify-center mt-10">
-          {rol === 'entrenador' && (
-          <button className="bg-yellow-500 text-black font-semibold px-6 py-3 rounded-full shadow-md hover:bg-yellow-400 transition">
-            <Link href="/pages/crear_noticias">Agregar noticias</Link>
-          </button>
-          )}
-        </div>
+        )}
       </main>
 
-      {/* Footer */}
       <Footer />
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-in-out;
+        }
+      `}</style>
     </div>
   );
 }
+
+

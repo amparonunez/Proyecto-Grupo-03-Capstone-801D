@@ -10,7 +10,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function HomePage() {
-  // Estado para el carrusel
+  // --- Carrusel de imágenes ---
   const images = [
     "/img/3aaddf9b-8ac2-426d-be63-4ed751736afc.jpg",
     "/img/74a242f6-6f3d-4deb-8bed-02922fcf3dc2.jpeg",
@@ -18,7 +18,7 @@ export default function HomePage() {
   ];
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [rol, setRol] = useState(null); // 👈 rol del usuario
+  const [rol, setRol] = useState<string | null>(null);
 
   // --- Obtener rol desde Supabase ---
   useEffect(() => {
@@ -51,6 +51,7 @@ export default function HomePage() {
     fetchUserRole();
   }, []);
 
+  // --- Funciones para el carrusel ---
   const nextSlide = () => {
     if (isAnimating) return;
     setIsAnimating(true);
@@ -66,17 +67,17 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Navbar */}
       <Nav />
 
-      {/* Hero Section */}
+      {/* HERO SECTION */}
       <section className="bg-black text-center text-white py-20 px-6">
         <h2 className="text-3xl md:text-5xl font-bold">
           Bienvenido a Mamba Club
         </h2>
 
-        {/* Icono de basket */}
+        {/* Ícono */}
         <div className="flex justify-center my-6">
           <Image
             src="/img/ball-of-basketball.svg"
@@ -91,22 +92,15 @@ export default function HomePage() {
         <div className="flex flex-wrap justify-center gap-4 mt-6">
           {(rol === "entrenador" || rol === "jugador") && (
             <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
-              <Link
-                href="/pages/entrenamientos_partidos"
-                className="flex items-center gap-2"
-              >
+              <Link href="/entrenamientos_partidos" className="flex items-center gap-2">
                 <Ban size={18} /> Entrenamientos
               </Link>
             </Button>
           )}
 
-          {/* Registrar asistencia (solo entrenadores) */}
           {rol === "entrenador" && (
             <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
-              <Link
-                href="/pages/asistencia"
-                className="flex items-center gap-2"
-              >
+              <Link href="/asistencia" className="flex items-center gap-2">
                 <Plus size={18} /> Registrar Asistencia
               </Link>
             </Button>
@@ -121,8 +115,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Acerca del Club */}
-      <section className="py-16 px-6 md:px-20 text-center md:text-left flex flex-col md:flex-row items-center gap-100">
+      {/* ACERCA DEL CLUB */}
+      <section className="py-16 px-6 md:px-20 text-center md:text-left flex flex-col md:flex-row items-center gap-16">
         <div className="md:w-1/2">
           <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">
             Acerca del Club
@@ -137,22 +131,52 @@ export default function HomePage() {
           </p>
           <p className="text-gray-700 mt-4">
             Participamos en campeonatos locales y regionales, promoviendo el
-            deporte como herramienta de integración y desarrollo personal. Contamos con una trayectoria de más de 8 años, y estamos comprometidos con el crecimiento
-            deportivo y social de nuestros miembros.
+            deporte como herramienta de integración y desarrollo personal.
+            Contamos con una trayectoria de más de 8 años y estamos
+            comprometidos con el crecimiento deportivo y social de nuestros
+            miembros.
           </p>
         </div>
+
         <div className="md:w-1/2">
           <Image
             src="/img/648a4f16-97c9-4314-92f2-3139994bd510.jpeg"
             alt="Mamba Club"
             width={400}
-            height={200}
+            height={250}
             className="rounded-2xl shadow-lg"
           />
         </div>
       </section>
 
-      {/* Carrusel */}
+      {/* MISIÓN Y VISIÓN */}
+      <section className="py-16 bg-gray-100">
+        <div className="max-w-5xl mx-auto px-6">
+          <h3 className="text-2xl font-bold text-black mb-6 text-center">
+            Nuestra Misión y Visión
+          </h3>
+          <div className="grid md:grid-cols-2 gap-8 text-gray-700 leading-relaxed">
+            <div>
+              <h4 className="text-yellow-500 font-semibold mb-2">Misión</h4>
+              <p>
+                Fomentar la práctica del deporte en la comunidad de Melipilla,
+                promoviendo el trabajo en equipo, la disciplina y la vida
+                saludable.
+              </p>
+            </div>
+            <div>
+              <h4 className="text-yellow-500 font-semibold mb-2">Visión</h4>
+              <p>
+                Ser un club deportivo referente en la formación integral de
+                deportistas y en la promoción del deporte inclusivo y
+                comunitario.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* GALERÍA */}
       <section className="bg-black py-16 px-6">
         <h3 className="text-2xl md:text-3xl font-bold text-center text-yellow-400 mb-8">
           Galería
@@ -163,7 +187,7 @@ export default function HomePage() {
             className="flex transition-transform duration-500 ease-in-out"
             style={{
               transform: `translateX(-${current * 100}%)`,
-              width: `${images.length * 33.6}%`,
+              width: `${images.length * 100}%`,
             }}
           >
             {images.map((src, index) => (
@@ -207,7 +231,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
       <Footer />
     </div>
   );
 }
+
