@@ -1,0 +1,263 @@
+"use client";
+
+import { Plus, Ban, Newspaper } from "lucide-react";
+import Button from "@/components/ui/button";
+import Nav from "@/components/ui/nav";
+import Footer from "@/components/ui/footer";
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
+
+export default function HomePage() {
+  // --- Carrusel ---
+  const images = [
+    "/img/3aaddf9b-8ac2-426d-be63-4ed751736afc.jpg",
+    "/img/74a242f6-6f3d-4deb-8bed-02922fcf3dc2.jpeg",
+    "/img/639e4c0a-3cb3-4ce9-87dd-b13372294fa3.jpg",
+  ];
+
+  const [current, setCurrent] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [rol, setRol] = useState<string | null>(null);
+
+  // --- Obtener rol desde Supabase ---
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.log("No hay usuario logueado");
+        return;
+      }
+
+      const res = await fetch("/api/usuarios/rol", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: user.id }),
+      });
+
+      const result = await res.json();
+
+      if (res.ok && result.rol) {
+        setRol(result.rol);
+      } else {
+        console.error(result.error);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
+
+  // Carrusel
+  const nextSlide = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 500);
+    setCurrent((prev) => (prev + 1) % images.length);
+  };
+
+  const prevSlide = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 500);
+    setCurrent((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+
+      {/* NAVBAR */}
+      <Nav />
+
+      {/* HERO SECTION */}
+      <section className="bg-black text-center text-white py-20 px-6">
+        <h2 className="text-3xl md:text-5xl font-bold">Bienvenido a Mamba Club</h2>
+
+        <div className="flex justify-center my-6">
+          <Image
+            src="/img/ball-of-basketball.svg"
+            alt="Mamba Logo"
+            width={50}
+            height={50}
+            className="yellow-filter"
+          />
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-4 mt-6">
+
+          {(rol === "entrenador" || rol === "jugador") && (
+            <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
+              <Link href="/entrenamientos_partidos" className="flex items-center gap-2">
+                <Ban size={18} /> Entrenamientos
+              </Link>
+            </Button>
+          )}
+
+          {rol === "entrenador" && (
+            <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
+              <Link href="/asistencia" className="flex items-center gap-2">
+                <Plus size={18} /> Registrar Asistencia
+              </Link>
+            </Button>
+          )}
+
+          <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg hover:bg-yellow-500 transition">
+            <Link href="/pages/noticias" className="flex items-center gap-2">
+              <Newspaper size={18} />
+              Ver Noticias
+            </Link>
+          </Button>
+
+        </div>
+      </section>
+
+      {/* ACERCA DEL CLUB + MISIÓN + VISIÓN */}
+      <section className="py-16 px-6 md:px-20 text-center md:text-left flex flex-col md:flex-row items-start gap-16">
+        
+        {/* TEXTO */}
+        <div className="md:w-1/2">
+          <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">
+            Acerca del Club
+          </h3>
+
+          <p className="text-gray-700 leading-relaxed">
+            El <span className="text-yellow-500 font-semibold">Mamba Club</span> es un club deportivo dedicado a 
+            impulsar la formación integral de deportistas en la comuna de Melipilla. 
+            Nuestro objetivo es crear un ambiente seguro, disciplinado y formativo para 
+            niños, jóvenes y adultos apasionados por el <strong>básquetbol</strong> y el <strong>voleibol</strong>.
+          </p>
+
+          <p className="text-gray-700 mt-4 leading-relaxed">
+            Promovemos valores como el respeto, la perseverancia y el trabajo en equipo 
+            mediante entrenamientos técnicos, actividades recreativas y participación en 
+            ligas locales y regionales. Con más de 8 años de trayectoria, seguimos formando 
+            comunidad y desarrollando el talento local.
+          </p>
+
+          {/* MISIÓN */}
+          <h4 className="text-xl font-bold text-black mt-10 mb-2">Nuestra Misión</h4>
+          <p className="text-gray-700 leading-relaxed">
+            Fomentar la práctica deportiva mediante espacios inclusivos y formativos que 
+            promuevan disciplina, compañerismo y vida saludable. Nuestro foco es apoyar 
+            el desarrollo integral de cada deportista.
+          </p>
+
+          {/* VISIÓN */}
+          <h4 className="text-xl font-bold text-black mt-10 mb-2">Nuestra Visión</h4>
+          <p className="text-gray-700 leading-relaxed">
+            Ser un club referente a nivel regional en formación deportiva, impulsando el 
+            crecimiento social y comunitario de Melipilla mediante el deporte.
+          </p>
+        </div>
+
+        {/* IMAGEN */}
+        <div className="md:w-1/2">
+          <Image
+            src="/img/648a4f16-97c9-4314-92f2-3139994bd510.jpeg"
+            alt="Mamba Club"
+            width={400}
+            height={250}
+            className="rounded-2xl shadow-lg"
+          />
+        </div>
+      </section>
+
+      {/* NUESTROS VALORES */}
+      <section className="py-16 px-6 md:px-20 bg-gray-100">
+        <div className="max-w-5xl mx-auto text-center">
+          <h3 className="text-2xl md:text-3xl font-bold text-black mb-8">
+            Nuestros Valores
+          </h3>
+
+          <div className="grid md:grid-cols-3 gap-8 text-gray-700">
+            <div className="p-6 bg-white rounded-2xl shadow-md">
+              <h4 className="text-yellow-500 font-bold mb-2">Disciplina</h4>
+              <p>
+                Fomentamos hábitos deportivos que fortalecen la constancia, responsabilidad 
+                y superación personal.
+              </p>
+            </div>
+
+            <div className="p-6 bg-white rounded-2xl shadow-md">
+              <h4 className="text-yellow-500 font-bold mb-2">Respeto</h4>
+              <p>
+                Creemos en un ambiente sano donde todos los integrantes se valoran, escuchan 
+                y apoyan mutuamente.
+              </p>
+            </div>
+
+            <div className="p-6 bg-white rounded-2xl shadow-md">
+              <h4 className="text-yellow-500 font-bold mb-2">Trabajo en Equipo</h4>
+              <p>
+                El éxito deportivo y humano se construye juntos, dentro y fuera de la cancha.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* GALERÍA */}
+      <section className="bg-black py-16 px-6">
+        <h3 className="text-2xl md:text-3xl font-bold text-center text-yellow-400 mb-8">
+          Galería
+        </h3>
+
+        <div className="relative w-full max-w-3xl mx-auto overflow-hidden rounded-2xl shadow-lg">
+          
+          <div
+            className="flex transition-transform duration-500 ease-in-out"
+            style={{
+              transform: `translateX(-${current * 100}%)`,
+              width: `${images.length * 100}%`,
+            }}
+          >
+            {images.map((src, index) => (
+              <div key={index} className="w-full flex-shrink-0">
+                <Image
+                  src={src}
+                  alt={`Slide ${index}`}
+                  width={800}
+                  height={500}
+                  className="w-full h-[400px] object-cover"
+                />
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={prevSlide}
+            className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-yellow-400 text-black p-2 rounded-full hover:bg-yellow-500 transition"
+          >
+            ‹
+          </button>
+
+          <button
+            onClick={nextSlide}
+            className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-yellow-400 text-black p-2 rounded-full hover:bg-yellow-500 transition"
+          >
+            ›
+          </button>
+
+          {/* Indicadores */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrent(index)}
+                className={`w-3 h-3 rounded-full ${
+                  index === current ? "bg-yellow-400" : "bg-gray-400"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+}
