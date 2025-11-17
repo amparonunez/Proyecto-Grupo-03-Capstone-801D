@@ -10,7 +10,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function HomePage() {
-  // --- Carrusel ---
+  // Carrusel imágenes
   const images = [
     "/img/3aaddf9b-8ac2-426d-be63-4ed751736afc.jpg",
     "/img/74a242f6-6f3d-4deb-8bed-02922fcf3dc2.jpeg",
@@ -21,7 +21,7 @@ export default function HomePage() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [rol, setRol] = useState<string | null>(null);
 
-  // --- Obtener rol desde Supabase ---
+  // Obtener rol desde Supabase
   useEffect(() => {
     const fetchUserRole = async () => {
       const {
@@ -29,10 +29,7 @@ export default function HomePage() {
         error: userError,
       } = await supabase.auth.getUser();
 
-      if (userError || !user) {
-        console.log("No hay usuario logueado");
-        return;
-      }
+      if (userError || !user) return;
 
       const res = await fetch("/api/usuarios/rol", {
         method: "POST",
@@ -41,18 +38,13 @@ export default function HomePage() {
       });
 
       const result = await res.json();
-
-      if (res.ok && result.rol) {
-        setRol(result.rol);
-      } else {
-        console.error(result.error);
-      }
+      if (res.ok && result.rol) setRol(result.rol);
     };
 
     fetchUserRole();
   }, []);
 
-  // Carrusel
+  // Funciones carrusel
   const nextSlide = () => {
     if (isAnimating) return;
     setIsAnimating(true);
@@ -67,30 +59,40 @@ export default function HomePage() {
     setCurrent((prev) => (prev - 1 + images.length) % images.length);
   };
 
+  // Auto-slide
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % images.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
 
       {/* NAVBAR */}
       <Nav />
 
-      {/* HERO SECTION */}
+      {/* HERO */}
       <section className="bg-black text-center text-white py-20 px-6">
-        <h2 className="text-3xl md:text-5xl font-bold">Bienvenido a Mamba Club</h2>
+        <h2 className="text-4xl md:text-6xl font-extrabold tracking-wide">
+          Bienvenido a Mamba Club
+        </h2>
 
         <div className="flex justify-center my-6">
           <Image
             src="/img/ball-of-basketball.svg"
             alt="Mamba Logo"
-            width={50}
-            height={50}
-            className="yellow-filter"
+            width={70}
+            height={70}
+            className="yellow-filter drop-shadow-[0_0_12px_#facc15]"
           />
         </div>
 
-        <div className="flex flex-wrap justify-center gap-4 mt-6">
-
+        {/* Botones */}
+        <div className="flex flex-wrap justify-center gap-4 mt-8">
           {(rol === "entrenador" || rol === "jugador") && (
-            <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
+            <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:scale-105 hover:bg-yellow-500 transition">
               <Link href="/entrenamientos_partidos" className="flex items-center gap-2">
                 <Ban size={18} /> Entrenamientos
               </Link>
@@ -98,59 +100,52 @@ export default function HomePage() {
           )}
 
           {rol === "entrenador" && (
-            <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
+            <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:scale-105 hover:bg-yellow-500 transition">
               <Link href="/asistencia" className="flex items-center gap-2">
                 <Plus size={18} /> Registrar Asistencia
               </Link>
             </Button>
           )}
 
-          <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg hover:bg-yellow-500 transition">
+          <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg hover:scale-105 hover:bg-yellow-500 transition">
             <Link href="/pages/noticias" className="flex items-center gap-2">
-              <Newspaper size={18} />
-              Ver Noticias
+              <Newspaper size={18} /> Ver Noticias
             </Link>
           </Button>
-
         </div>
       </section>
 
-      {/* ACERCA DEL CLUB + MISIÓN + VISIÓN */}
-      <section className="py-16 px-6 md:px-20 text-center md:text-left flex flex-col md:flex-row items-start gap-16">
-        
+      {/* ACERCA DEL CLUB + MISIÓN Y VISIÓN */}
+      <section className="py-16 px-6 md:px-20 flex flex-col md:flex-row items-start gap-16">
+
         {/* TEXTO */}
         <div className="md:w-1/2">
-          <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">
-            Acerca del Club
-          </h3>
+          <h3 className="text-3xl font-bold text-black mb-6">Acerca del Club</h3>
 
           <p className="text-gray-700 leading-relaxed">
-            El <span className="text-yellow-500 font-semibold">Mamba Club</span> es un club deportivo dedicado a 
-            impulsar la formación integral de deportistas en la comuna de Melipilla. 
-            Nuestro objetivo es crear un ambiente seguro, disciplinado y formativo para 
-            niños, jóvenes y adultos apasionados por el <strong>básquetbol</strong> y el <strong>voleibol</strong>.
+            El <span className="text-yellow-500 font-semibold">Mamba Club</span> es un club deportivo
+            enfocado en la formación integral de deportistas en Melipilla.
+            Contamos con espacios seguros, inclusivos y dinámicos para quienes practican
+            <strong> básquetbol</strong> y <strong> voleibol</strong>.
           </p>
 
           <p className="text-gray-700 mt-4 leading-relaxed">
-            Promovemos valores como el respeto, la perseverancia y el trabajo en equipo 
-            mediante entrenamientos técnicos, actividades recreativas y participación en 
-            ligas locales y regionales. Con más de 8 años de trayectoria, seguimos formando 
-            comunidad y desarrollando el talento local.
+            Promovemos valores como la disciplina, perseverancia, respeto y el trabajo en equipo.
+            Nuestra comunidad está formada por niños, jóvenes y adultos apasionados por el deporte.
           </p>
 
           {/* MISIÓN */}
-          <h4 className="text-xl font-bold text-black mt-10 mb-2">Nuestra Misión</h4>
+          <h4 className="text-xl font-bold text-black mt-10">Nuestra Misión</h4>
           <p className="text-gray-700 leading-relaxed">
-            Fomentar la práctica deportiva mediante espacios inclusivos y formativos que 
-            promuevan disciplina, compañerismo y vida saludable. Nuestro foco es apoyar 
-            el desarrollo integral de cada deportista.
+            Fomentar el deporte con espacios formativos que impulsen disciplina, compañerismo
+            y bienestar físico y emocional.
           </p>
 
           {/* VISIÓN */}
-          <h4 className="text-xl font-bold text-black mt-10 mb-2">Nuestra Visión</h4>
+          <h4 className="text-xl font-bold text-black mt-10">Nuestra Visión</h4>
           <p className="text-gray-700 leading-relaxed">
-            Ser un club referente a nivel regional en formación deportiva, impulsando el 
-            crecimiento social y comunitario de Melipilla mediante el deporte.
+            Ser un club referente regional, potenciando el talento local y el crecimiento deportivo
+            dentro de la comunidad de Melipilla.
           </p>
         </div>
 
@@ -159,57 +154,48 @@ export default function HomePage() {
           <Image
             src="/img/648a4f16-97c9-4314-92f2-3139994bd510.jpeg"
             alt="Mamba Club"
-            width={400}
-            height={250}
-            className="rounded-2xl shadow-lg"
+            width={500}
+            height={350}
+            className="rounded-3xl shadow-xl"
           />
         </div>
       </section>
 
-      {/* NUESTROS VALORES */}
+      {/* VALORES */}
       <section className="py-16 px-6 md:px-20 bg-gray-100">
         <div className="max-w-5xl mx-auto text-center">
-          <h3 className="text-2xl md:text-3xl font-bold text-black mb-8">
-            Nuestros Valores
-          </h3>
+          <h3 className="text-3xl font-bold text-black mb-8">Nuestros Valores</h3>
 
           <div className="grid md:grid-cols-3 gap-8 text-gray-700">
-            <div className="p-6 bg-white rounded-2xl shadow-md">
+            <div className="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition">
               <h4 className="text-yellow-500 font-bold mb-2">Disciplina</h4>
-              <p>
-                Fomentamos hábitos deportivos que fortalecen la constancia, responsabilidad 
-                y superación personal.
-              </p>
+              <p>La constancia y la responsabilidad son la base del crecimiento deportivo.</p>
             </div>
 
-            <div className="p-6 bg-white rounded-2xl shadow-md">
+            <div className="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition">
               <h4 className="text-yellow-500 font-bold mb-2">Respeto</h4>
-              <p>
-                Creemos en un ambiente sano donde todos los integrantes se valoran, escuchan 
-                y apoyan mutuamente.
-              </p>
+              <p>Promovemos un ambiente seguro, sano y colaborativo entre todos.</p>
             </div>
 
-            <div className="p-6 bg-white rounded-2xl shadow-md">
+            <div className="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition">
               <h4 className="text-yellow-500 font-bold mb-2">Trabajo en Equipo</h4>
-              <p>
-                El éxito deportivo y humano se construye juntos, dentro y fuera de la cancha.
-              </p>
+              <p>Juntos logramos mejores resultados, dentro y fuera de la cancha.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* GALERÍA */}
-      <section className="bg-black py-16 px-6">
-        <h3 className="text-2xl md:text-3xl font-bold text-center text-yellow-400 mb-8">
+      {/* GALERÍA MEJORADA */}
+      <section className="bg-black py-20 px-6">
+        <h3 className="text-3xl md:text-4xl font-extrabold text-center text-yellow-400 mb-12 tracking-wide drop-shadow-lg">
           Galería
         </h3>
 
-        <div className="relative w-full max-w-3xl mx-auto overflow-hidden rounded-2xl shadow-lg">
-          
+        <div className="relative w-full max-w-4xl mx-auto overflow-hidden rounded-3xl shadow-[0_0_25px_rgba(255,223,0,0.4)] group">
+
+          {/* IMÁGENES */}
           <div
-            className="flex transition-transform duration-500 ease-in-out"
+            className="flex transition-transform duration-700 ease-in-out"
             style={{
               transform: `translateX(-${current * 100}%)`,
               width: `${images.length * 100}%`,
@@ -220,37 +206,41 @@ export default function HomePage() {
                 <Image
                   src={src}
                   alt={`Slide ${index}`}
-                  width={800}
-                  height={500}
-                  className="w-full h-[400px] object-cover"
+                  width={1200}
+                  height={700}
+                  placeholder="blur"
+                  blurDataURL={src}
+                  className="w-full h-[320px] md:h-[500px] object-cover object-center transition-all duration-700"
                 />
               </div>
             ))}
           </div>
 
+          {/* BOTONES */}
           <button
             onClick={prevSlide}
-            className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-yellow-400 text-black p-2 rounded-full hover:bg-yellow-500 transition"
+            className="absolute top-1/2 -translate-y-1/2 left-4 bg-yellow-400 text-black p-3 md:p-4 rounded-full shadow-lg hover:bg-yellow-500 hover:scale-110 transition hidden group-hover:block"
           >
             ‹
           </button>
 
           <button
             onClick={nextSlide}
-            className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-yellow-400 text-black p-2 rounded-full hover:bg-yellow-500 transition"
+            className="absolute top-1/2 -translate-y-1/2 right-4 bg-yellow-400 text-black p-3 md:p-4 rounded-full shadow-lg hover:bg-yellow-500 hover:scale-110 transition hidden group-hover:block"
           >
             ›
           </button>
 
-          {/* Indicadores */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          {/* INDICADORES */}
+          <div className="flex justify-center mt-6 space-x-3">
             {images.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrent(index)}
-                className={`w-3 h-3 rounded-full ${
-                  index === current ? "bg-yellow-400" : "bg-gray-400"
-                }`}
+                className={`
+                  w-3 h-3 md:w-4 md:h-4 rounded-full transition-all duration-300
+                  ${index === current ? "bg-yellow-400 scale-125" : "bg-gray-500"}
+                `}
               />
             ))}
           </div>
