@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 export default function AgendaPage() {
-  // --- Eventos dinámicos ---
+  // --- Eventos estáticos como ya los tienes ---
   const events = [
     {
       id: 1,
@@ -46,6 +46,40 @@ export default function AgendaPage() {
       categoria: "evento",
     },
   ];
+
+  // ---------------------------
+  // 🔥 CALENDARIO EN TIEMPO REAL
+  // ---------------------------
+  const hoy = new Date();
+  const [mes, setMes] = useState(hoy.getMonth());
+  const [año, setAño] = useState(hoy.getFullYear());
+
+  const nombresMes = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+  ];
+
+  const cambiarMes = (direccion) => {
+    setMes((prevMes) => {
+      let nuevoMes = prevMes + direccion;
+
+      if (nuevoMes < 0) {
+        setAño((prev) => prev - 1);
+        return 11;
+      }
+      if (nuevoMes > 11) {
+        setAño((prev) => prev + 1);
+        return 0;
+      }
+      return nuevoMes;
+    });
+  };
+
+  const primerDiaSemana = new Date(año, mes, 1).getDay() || 7; // Lunes = 1
+  const diasEnMes = new Date(año, mes + 1, 0).getDate();
+
+  const hoyDia = hoy.getDate();
+  const esMesActual = hoy.getMonth() === mes && hoy.getFullYear() === año;
 
   // --- Estado de filtro ---
   const [filtro, setFiltro] = useState("todos");
@@ -88,20 +122,29 @@ export default function AgendaPage() {
           ))}
         </div>
 
-        {/* CALENDARIO */}
+        {/* CALENDARIO REAL */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 mb-14 shadow-2xl">
           <div className="flex justify-between items-center mb-6">
-            <button className="text-yellow-400 hover:text-yellow-300 text-2xl">
+            <button
+              onClick={() => cambiarMes(-1)}
+              className="text-yellow-400 hover:text-yellow-300 text-2xl"
+            >
               <ChevronLeft size={28} />
             </button>
 
-            <h2 className="text-3xl font-bold tracking-wide">Noviembre 2023</h2>
+            <h2 className="text-3xl font-bold tracking-wide">
+              {nombresMes[mes]} {año}
+            </h2>
 
-            <button className="text-yellow-400 hover:text-yellow-300 text-2xl">
+            <button
+              onClick={() => cambiarMes(1)}
+              className="text-yellow-400 hover:text-yellow-300 text-2xl"
+            >
               <ChevronRight size={28} />
             </button>
           </div>
 
+          {/* Días de la semana */}
           <div className="grid grid-cols-7 text-center text-yellow-400 font-semibold mb-3">
             <span>L</span>
             <span>M</span>
@@ -112,15 +155,25 @@ export default function AgendaPage() {
             <span>D</span>
           </div>
 
+          {/* Días dinámicos */}
           <div className="grid grid-cols-7 text-center gap-y-4 text-gray-200">
-            {Array.from({ length: 30 }, (_, i) => i + 1).map((day) => (
+
+            {/* Espacios vacíos antes del día 1 */}
+            {Array.from({ length: primerDiaSemana - 1 }).map((_, i) => (
+              <div key={`empty-${i}`} />
+            ))}
+
+            {/* Días reales del mes */}
+            {Array.from({ length: diasEnMes }, (_, i) => i + 1).map((day) => (
               <div
                 key={day}
-                className={`py-2 rounded-full cursor-pointer transition-all ${
-                  day === 4
-                    ? "bg-yellow-500 text-black font-bold shadow-lg scale-110"
-                    : "hover:bg-neutral-800"
-                }`}
+                className={`py-2 rounded-full cursor-pointer transition-all
+                  ${
+                    esMesActual && day === hoyDia
+                      ? "bg-yellow-500 text-black font-bold shadow-lg scale-110"
+                      : "hover:bg-neutral-800"
+                  }
+                `}
               >
                 {day}
               </div>
@@ -165,7 +218,6 @@ export default function AgendaPage() {
             </div>
           ))}
 
-          {/* SIN RESULTADOS */}
           {eventosFiltrados.length === 0 && (
             <div className="text-center text-gray-400 py-10 text-lg">
               No hay eventos para esta categoría.
