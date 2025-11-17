@@ -10,12 +10,13 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function HomePage() {
-  // --- Carrusel de imágenes ---
+  // --- Carrusel ---
   const images = [
     "/img/3aaddf9b-8ac2-426d-be63-4ed751736afc.jpg",
     "/img/74a242f6-6f3d-4deb-8bed-02922fcf3dc2.jpeg",
     "/img/639e4c0a-3cb3-4ce9-87dd-b13372294fa3.jpg",
   ];
+
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [rol, setRol] = useState<string | null>(null);
@@ -51,7 +52,7 @@ export default function HomePage() {
     fetchUserRole();
   }, []);
 
-  // --- Funciones para el carrusel ---
+  // Carrusel
   const nextSlide = () => {
     if (isAnimating) return;
     setIsAnimating(true);
@@ -68,16 +69,14 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Navbar */}
+
+      {/* NAVBAR */}
       <Nav />
 
       {/* HERO SECTION */}
       <section className="bg-black text-center text-white py-20 px-6">
-        <h2 className="text-3xl md:text-5xl font-bold">
-          Bienvenido a Mamba Club
-        </h2>
+        <h2 className="text-3xl md:text-5xl font-bold">Bienvenido a Mamba Club</h2>
 
-        {/* Ícono */}
         <div className="flex justify-center my-6">
           <Image
             src="/img/ball-of-basketball.svg"
@@ -88,8 +87,8 @@ export default function HomePage() {
           />
         </div>
 
-        {/* Botones */}
         <div className="flex flex-wrap justify-center gap-4 mt-6">
+
           {(rol === "entrenador" || rol === "jugador") && (
             <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-yellow-500 transition">
               <Link href="/entrenamientos_partidos" className="flex items-center gap-2">
@@ -112,32 +111,50 @@ export default function HomePage() {
               Ver Noticias
             </Link>
           </Button>
+
         </div>
       </section>
 
-      {/* ACERCA DEL CLUB */}
-      <section className="py-16 px-6 md:px-20 text-center md:text-left flex flex-col md:flex-row items-center gap-16">
+      {/* ACERCA DEL CLUB + MISIÓN + VISIÓN */}
+      <section className="py-16 px-6 md:px-20 text-center md:text-left flex flex-col md:flex-row items-start gap-16">
+        
+        {/* TEXTO */}
         <div className="md:w-1/2">
           <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">
             Acerca del Club
           </h3>
+
           <p className="text-gray-700 leading-relaxed">
-            El <span className="text-yellow-500 font-semibold">Mamba Club</span>{" "}
-            es un club deportivo fundado para fomentar la pasión por el{" "}
-            <strong>básquetbol</strong> y el <strong>voleibol</strong> en la
-            comunidad de Melipilla. Nuestro objetivo es formar deportistas con
-            disciplina, respeto y trabajo en equipo, ofreciendo entrenamientos
-            de calidad para niños, jóvenes y adultos.
+            El <span className="text-yellow-500 font-semibold">Mamba Club</span> es un club deportivo dedicado a 
+            impulsar la formación integral de deportistas en la comuna de Melipilla. 
+            Nuestro objetivo es crear un ambiente seguro, disciplinado y formativo para 
+            niños, jóvenes y adultos apasionados por el <strong>básquetbol</strong> y el <strong>voleibol</strong>.
           </p>
-          <p className="text-gray-700 mt-4">
-            Participamos en campeonatos locales y regionales, promoviendo el
-            deporte como herramienta de integración y desarrollo personal.
-            Contamos con una trayectoria de más de 8 años y estamos
-            comprometidos con el crecimiento deportivo y social de nuestros
-            miembros.
+
+          <p className="text-gray-700 mt-4 leading-relaxed">
+            Promovemos valores como el respeto, la perseverancia y el trabajo en equipo 
+            mediante entrenamientos técnicos, actividades recreativas y participación en 
+            ligas locales y regionales. Con más de 8 años de trayectoria, seguimos formando 
+            comunidad y desarrollando el talento local.
+          </p>
+
+          {/* MISIÓN */}
+          <h4 className="text-xl font-bold text-black mt-10 mb-2">Nuestra Misión</h4>
+          <p className="text-gray-700 leading-relaxed">
+            Fomentar la práctica deportiva mediante espacios inclusivos y formativos que 
+            promuevan disciplina, compañerismo y vida saludable. Nuestro foco es apoyar 
+            el desarrollo integral de cada deportista.
+          </p>
+
+          {/* VISIÓN */}
+          <h4 className="text-xl font-bold text-black mt-10 mb-2">Nuestra Visión</h4>
+          <p className="text-gray-700 leading-relaxed">
+            Ser un club referente a nivel regional en formación deportiva, impulsando el 
+            crecimiento social y comunitario de Melipilla mediante el deporte.
           </p>
         </div>
 
+        {/* IMAGEN */}
         <div className="md:w-1/2">
           <Image
             src="/img/648a4f16-97c9-4314-92f2-3139994bd510.jpeg"
@@ -149,27 +166,34 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* MISIÓN Y VISIÓN */}
-      <section className="py-16 bg-gray-100">
-        <div className="max-w-5xl mx-auto px-6">
-          <h3 className="text-2xl font-bold text-black mb-6 text-center">
-            Nuestra Misión y Visión
+      {/* NUESTROS VALORES */}
+      <section className="py-16 px-6 md:px-20 bg-gray-100">
+        <div className="max-w-5xl mx-auto text-center">
+          <h3 className="text-2xl md:text-3xl font-bold text-black mb-8">
+            Nuestros Valores
           </h3>
-          <div className="grid md:grid-cols-2 gap-8 text-gray-700 leading-relaxed">
-            <div>
-              <h4 className="text-yellow-500 font-semibold mb-2">Misión</h4>
+
+          <div className="grid md:grid-cols-3 gap-8 text-gray-700">
+            <div className="p-6 bg-white rounded-2xl shadow-md">
+              <h4 className="text-yellow-500 font-bold mb-2">Disciplina</h4>
               <p>
-                Fomentar la práctica del deporte en la comunidad de Melipilla,
-                promoviendo el trabajo en equipo, la disciplina y la vida
-                saludable.
+                Fomentamos hábitos deportivos que fortalecen la constancia, responsabilidad 
+                y superación personal.
               </p>
             </div>
-            <div>
-              <h4 className="text-yellow-500 font-semibold mb-2">Visión</h4>
+
+            <div className="p-6 bg-white rounded-2xl shadow-md">
+              <h4 className="text-yellow-500 font-bold mb-2">Respeto</h4>
               <p>
-                Ser un club deportivo referente en la formación integral de
-                deportistas y en la promoción del deporte inclusivo y
-                comunitario.
+                Creemos en un ambiente sano donde todos los integrantes se valoran, escuchan 
+                y apoyan mutuamente.
+              </p>
+            </div>
+
+            <div className="p-6 bg-white rounded-2xl shadow-md">
+              <h4 className="text-yellow-500 font-bold mb-2">Trabajo en Equipo</h4>
+              <p>
+                El éxito deportivo y humano se construye juntos, dentro y fuera de la cancha.
               </p>
             </div>
           </div>
@@ -183,6 +207,7 @@ export default function HomePage() {
         </h3>
 
         <div className="relative w-full max-w-3xl mx-auto overflow-hidden rounded-2xl shadow-lg">
+          
           <div
             className="flex transition-transform duration-500 ease-in-out"
             style={{
@@ -203,13 +228,13 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Controles */}
           <button
             onClick={prevSlide}
             className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-yellow-400 text-black p-2 rounded-full hover:bg-yellow-500 transition"
           >
             ‹
           </button>
+
           <button
             onClick={nextSlide}
             className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-yellow-400 text-black p-2 rounded-full hover:bg-yellow-500 transition"
@@ -236,4 +261,3 @@ export default function HomePage() {
     </div>
   );
 }
-
