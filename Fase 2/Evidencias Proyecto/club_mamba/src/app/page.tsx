@@ -21,7 +21,7 @@ export default function HomePage() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [rol, setRol] = useState<string | null>(null);
 
-  // Obtener rol desde Supabase
+  // Obtener rol
   useEffect(() => {
     const fetchUserRole = async () => {
       const {
@@ -115,10 +115,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ACERCA DEL CLUB + MISIÓN Y VISIÓN */}
+      {/* ACERCA DEL CLUB */}
       <section className="py-16 px-6 md:px-20 flex flex-col md:flex-row items-start gap-16">
-
-        {/* TEXTO */}
         <div className="md:w-1/2">
           <h3 className="text-3xl font-bold text-black mb-6">Acerca del Club</h3>
 
@@ -131,17 +129,14 @@ export default function HomePage() {
 
           <p className="text-gray-700 mt-4 leading-relaxed">
             Promovemos valores como la disciplina, perseverancia, respeto y el trabajo en equipo.
-            Nuestra comunidad está formada por niños, jóvenes y adultos apasionados por el deporte.
           </p>
 
-          {/* MISIÓN */}
           <h4 className="text-xl font-bold text-black mt-10">Nuestra Misión</h4>
           <p className="text-gray-700 leading-relaxed">
             Fomentar el deporte con espacios formativos que impulsen disciplina, compañerismo
             y bienestar físico y emocional.
           </p>
 
-          {/* VISIÓN */}
           <h4 className="text-xl font-bold text-black mt-10">Nuestra Visión</h4>
           <p className="text-gray-700 leading-relaxed">
             Ser un club referente regional, potenciando el talento local y el crecimiento deportivo
@@ -149,7 +144,6 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* IMAGEN */}
         <div className="md:w-1/2">
           <Image
             src="/img/648a4f16-97c9-4314-92f2-3139994bd510.jpeg"
@@ -169,64 +163,65 @@ export default function HomePage() {
           <div className="grid md:grid-cols-3 gap-8 text-gray-700">
             <div className="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition">
               <h4 className="text-yellow-500 font-bold mb-2">Disciplina</h4>
-              <p>La constancia y la responsabilidad son la base del crecimiento deportivo.</p>
+              <p>La constancia es clave para el crecimiento deportivo.</p>
             </div>
 
             <div className="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition">
               <h4 className="text-yellow-500 font-bold mb-2">Respeto</h4>
-              <p>Promovemos un ambiente seguro, sano y colaborativo entre todos.</p>
+              <p>Promovemos un ambiente seguro y colaborativo.</p>
             </div>
 
             <div className="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition">
               <h4 className="text-yellow-500 font-bold mb-2">Trabajo en Equipo</h4>
-              <p>Juntos logramos mejores resultados, dentro y fuera de la cancha.</p>
+              <p>Juntos logramos mejores resultados.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* GALERÍA MEJORADA */}
+      {/* GALERÍA – CARRUSEL CORREGIDO */}
       <section className="bg-black py-20 px-6">
         <h3 className="text-3xl md:text-4xl font-extrabold text-center text-yellow-400 mb-12 tracking-wide drop-shadow-lg">
           Galería
         </h3>
 
-        <div className="relative w-full max-w-4xl mx-auto overflow-hidden rounded-3xl shadow-[0_0_25px_rgba(255,223,0,0.4)] group">
+        <div className="relative w-full max-w-4xl mx-auto rounded-3xl overflow-hidden shadow-[0_0_30px_rgba(255,223,0,0.35)]">
 
-          {/* IMÁGENES */}
+          {/* SLIDER */}
           <div
             className="flex transition-transform duration-700 ease-in-out"
             style={{
               transform: `translateX(-${current * 100}%)`,
-              width: `${images.length * 100}%`,
             }}
           >
             {images.map((src, index) => (
-              <div key={index} className="w-full flex-shrink-0">
+              <div
+                key={index}
+                className="min-w-full aspect-[16/9] bg-black"
+              >
                 <Image
                   src={src}
                   alt={`Slide ${index}`}
-                  width={1200}
-                  height={700}
-                  placeholder="blur"
-                  blurDataURL={src}
-                  className="w-full h-[320px] md:h-[500px] object-cover object-center transition-all duration-700"
+                  width={1600}
+                  height={900}
+                  className="w-full h-full object-cover"
                 />
               </div>
             ))}
           </div>
 
-          {/* BOTONES */}
+          {/* BOTÓN IZQUIERDA */}
           <button
             onClick={prevSlide}
-            className="absolute top-1/2 -translate-y-1/2 left-4 bg-yellow-400 text-black p-3 md:p-4 rounded-full shadow-lg hover:bg-yellow-500 hover:scale-110 transition hidden group-hover:block"
+            className="absolute top-1/2 left-4 -translate-y-1/2 bg-yellow-400 text-black p-3 rounded-full shadow-lg hover:bg-yellow-500 hover:scale-110 transition"
           >
             ‹
           </button>
 
+          {/* BOTÓN DERECHA */}
           <button
             onClick={nextSlide}
-            className="absolute top-1/2 -translate-y-1/2 right-4 bg-yellow-400 text-black p-3 md:p-4 rounded-full shadow-lg hover:bg-yellow-500 hover:scale-110 transition hidden group-hover:block"
+            className="absolute top-1/2 right-4 -translate-y-1/2 bg-yellow-400 text-black p-3 rounded-full shadow-lg hover:bg-yellow-500 hover:scale-110 transition"
           >
             ›
           </button>
@@ -237,10 +232,11 @@ export default function HomePage() {
               <button
                 key={index}
                 onClick={() => setCurrent(index)}
-                className={`
-                  w-3 h-3 md:w-4 md:h-4 rounded-full transition-all duration-300
-                  ${index === current ? "bg-yellow-400 scale-125" : "bg-gray-500"}
-                `}
+                className={`w-3 h-3 rounded-full transition-all ${
+                  index === current
+                    ? "bg-yellow-400 scale-125"
+                    : "bg-gray-500"
+                }`}
               />
             ))}
           </div>
