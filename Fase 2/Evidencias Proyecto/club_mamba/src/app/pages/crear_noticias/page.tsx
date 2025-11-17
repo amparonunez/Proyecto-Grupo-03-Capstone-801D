@@ -32,13 +32,13 @@ export default function CrearNoticiaPage() {
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   const [mensaje, setMensaje] = useState("");
 
-  // 🔄 Cargar noticias guardadas
+  //  Cargar noticias guardadas
   useEffect(() => {
     const stored = localStorage.getItem("noticias");
     if (stored) setNoticias(JSON.parse(stored));
   }, []);
 
-  // 💾 Guardar cambios
+  //  Guardar cambios
   useEffect(() => {
     localStorage.setItem("noticias", JSON.stringify(noticias));
   }, [noticias]);

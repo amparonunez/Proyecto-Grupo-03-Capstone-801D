@@ -48,7 +48,7 @@ export default function AgendaPage() {
   ];
 
   // ---------------------------
-  // 🔥 CALENDARIO EN TIEMPO REAL
+  //  CALENDARIO EN TIEMPO REAL
   // ---------------------------
   const hoy = new Date();
   const [mes, setMes] = useState(hoy.getMonth());
