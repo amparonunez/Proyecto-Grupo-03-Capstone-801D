@@ -1,118 +1,151 @@
 "use client";
 
+import { useState } from "react";
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Dumbbell, Monitor } from "lucide-react";
+import {
+  CalendarDays,
+  Dumbbell,
+  Trophy,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 export default function AgendaPage() {
-  const today = new Date();
-  const [currentDate, setCurrentDate] = useState({
-    month: today.getMonth(),
-    year: today.getFullYear(),
-  });
-
-  const [selectedDay, setSelectedDay] = useState(null);
-  const [direction, setDirection] = useState(0); // Para animación: -1 atrás, 1 adelante
-
-  // Eventos de ejemplo
-  const events = {
-    "2025-11-10": [
-      { tipo: "Partido", descripcion: "Visita", hora: "18:00 – 20:00" },
-    ],
-    "2025-11-21": [
-      { tipo: "Entrenamiento", descripcion: "Participante" },
-    ],
-  };
-
-  const months = [
-    "enero", "febrero", "marzo", "abril", "mayo", "junio",
-    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+  // --- Eventos estáticos como ya los tienes ---
+  const events = [
+    {
+      id: 1,
+      tipo: "Entrenamiento",
+      fecha: "Martes 21 Nov",
+      hora: "18:00 – 20:00",
+      descripcion: "Participante",
+      icono: <Dumbbell className="text-black w-7 h-7" />,
+      color: "bg-yellow-500",
+      categoria: "entrenamiento",
+      tag: "Próximo",
+    },
+    {
+      id: 2,
+      tipo: "Partido",
+      fecha: "Viernes 10 Nov",
+      hora: "18:00",
+      descripcion: "Visita",
+      icono: <Trophy className="text-black w-7 h-7" />,
+      color: "bg-red-500",
+      categoria: "partido",
+    },
+    {
+      id: 3,
+      tipo: "Reunión General",
+      fecha: "Sábado 25 Nov",
+      hora: "16:00 hrs",
+      descripcion: "Club – Obligatoria",
+      icono: <CalendarDays className="text-black w-7 h-7" />,
+      color: "bg-blue-500",
+      categoria: "evento",
+    },
   ];
 
-  const getDaysInMonth = (month, year) => {
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const firstDay = new Date(year, month, 1).getDay();
-    const adjustedFirstDay = (firstDay + 6) % 7;
-    const days = [];
+  // ---------------------------
+  //  CALENDARIO EN TIEMPO REAL
+  // ---------------------------
+  const hoy = new Date();
+  const [mes, setMes] = useState(hoy.getMonth());
+  const [año, setAño] = useState(hoy.getFullYear());
 
-    for (let i = 0; i < adjustedFirstDay; i++) {
-      days.push(null);
-    }
-    for (let d = 1; d <= daysInMonth; d++) {
-      days.push(d);
-    }
+  const nombresMes = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+  ];
 
-    return days;
-  };
+  const cambiarMes = (direccion) => {
+    setMes((prevMes) => {
+      let nuevoMes = prevMes + direccion;
 
-  const prevMonth = () => {
-    if (currentDate.year === 1900 && currentDate.month === 0) return;
-    setDirection(-1);
-    setCurrentDate((prev) => {
-      if (prev.month === 0) return { month: 11, year: prev.year - 1 };
-      return { ...prev, month: prev.month - 1 };
+      if (nuevoMes < 0) {
+        setAño((prev) => prev - 1);
+        return 11;
+      }
+      if (nuevoMes > 11) {
+        setAño((prev) => prev + 1);
+        return 0;
+      }
+      return nuevoMes;
     });
-    setSelectedDay(null);
   };
 
-  const nextMonth = () => {
-    if (currentDate.year === 2100 && currentDate.month === 11) return;
-    setDirection(1);
-    setCurrentDate((prev) => {
-      if (prev.month === 11) return { month: 0, year: prev.year + 1 };
-      return { ...prev, month: prev.month + 1 };
-    });
-    setSelectedDay(null);
-  };
+  const primerDiaSemana = new Date(año, mes, 1).getDay() || 7; // Lunes = 1
+  const diasEnMes = new Date(año, mes + 1, 0).getDate();
 
-  const days = getDaysInMonth(currentDate.month, currentDate.year);
-  const todayDay =
-    currentDate.year === today.getFullYear() &&
-    currentDate.month === today.getMonth()
-      ? today.getDate()
-      : null;
+  const hoyDia = hoy.getDate();
+  const esMesActual = hoy.getMonth() === mes && hoy.getFullYear() === año;
 
-  const selectedDateKey =
-    selectedDay &&
-    `${currentDate.year}-${String(currentDate.month + 1).padStart(2, "0")}-${String(
-      selectedDay
-    ).padStart(2, "0")}`;
+  // --- Estado de filtro ---
+  const [filtro, setFiltro] = useState("todos");
 
-  const selectedEvents = selectedDateKey ? events[selectedDateKey] : null;
+  const eventosFiltrados =
+    filtro === "todos"
+      ? events
+      : events.filter((e) => e.categoria === filtro);
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       <Nav />
 
       <main className="flex-grow px-6 py-12 max-w-6xl mx-auto w-full">
-        <h1 className="text-5xl font-extrabold text-center mb-10 text-gray-100">
+        <h1 className="text-5xl font-extrabold text-center mb-8 tracking-wide">
           AGENDA
         </h1>
 
-        {/* Calendario */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 mb-10 shadow-lg overflow-hidden">
+        {/* FILTROS */}
+        <div className="flex flex-wrap justify-center gap-4 mb-12">
+          {[
+            { nombre: "Todos", valor: "todos" },
+            { nombre: "Entrenamientos", valor: "entrenamiento" },
+            { nombre: "Partidos", valor: "partido" },
+            { nombre: "Eventos", valor: "evento" },
+            { nombre: "Calendario Completo", valor: "todos" },
+          ].map((btn) => (
+            <button
+              key={btn.valor}
+              onClick={() => setFiltro(btn.valor)}
+              className={`px-5 py-2 rounded-full border font-semibold transition
+                ${
+                  filtro === btn.valor
+                    ? "bg-yellow-500 text-black border-yellow-500"
+                    : "border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
+                }`}
+            >
+              {btn.nombre}
+            </button>
+          ))}
+        </div>
+
+        {/* CALENDARIO REAL */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 mb-14 shadow-2xl">
           <div className="flex justify-between items-center mb-6">
             <button
-              onClick={prevMonth}
-              className="text-yellow-400 hover:text-yellow-300 text-2xl transition-transform active:scale-90"
+              onClick={() => cambiarMes(-1)}
+              className="text-yellow-400 hover:text-yellow-300 text-2xl"
             >
-              &lt;
+              <ChevronLeft size={28} />
             </button>
-            <h2 className="text-2xl font-semibold capitalize">
-              {months[currentDate.month]} {currentDate.year}
+
+            <h2 className="text-3xl font-bold tracking-wide">
+              {nombresMes[mes]} {año}
             </h2>
+
             <button
-              onClick={nextMonth}
-              className="text-yellow-400 hover:text-yellow-300 text-2xl transition-transform active:scale-90"
+              onClick={() => cambiarMes(1)}
+              className="text-yellow-400 hover:text-yellow-300 text-2xl"
             >
-              &gt;
+              <ChevronRight size={28} />
             </button>
           </div>
 
           {/* Días de la semana */}
-          <div className="grid grid-cols-7 text-center text-yellow-400 font-semibold mb-4">
+          <div className="grid grid-cols-7 text-center text-yellow-400 font-semibold mb-3">
             <span>L</span>
             <span>M</span>
             <span>M</span>
@@ -122,100 +155,75 @@ export default function AgendaPage() {
             <span>D</span>
           </div>
 
-          {/* Animación al cambiar de mes */}
-          <div className="relative h-[260px] overflow-hidden">
-            <AnimatePresence mode="wait" initial={false} custom={direction}>
-              <motion.div
-                key={`${currentDate.month}-${currentDate.year}`}
-                custom={direction}
-                initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
-                transition={{ duration: 0.35 }}
-                className="grid grid-cols-7 text-center gap-y-3 text-gray-200 absolute inset-0"
+          {/* Días dinámicos */}
+          <div className="grid grid-cols-7 text-center gap-y-4 text-gray-200">
+
+            {/* Espacios vacíos antes del día 1 */}
+            {Array.from({ length: primerDiaSemana - 1 }).map((_, i) => (
+              <div key={`empty-${i}`} />
+            ))}
+
+            {/* Días reales del mes */}
+            {Array.from({ length: diasEnMes }, (_, i) => i + 1).map((day) => (
+              <div
+                key={day}
+                className={`py-2 rounded-full cursor-pointer transition-all
+                  ${
+                    esMesActual && day === hoyDia
+                      ? "bg-yellow-500 text-black font-bold shadow-lg scale-110"
+                      : "hover:bg-neutral-800"
+                  }
+                `}
               >
-                {days.map((day, index) => {
-  const isToday =
-    day === todayDay &&
-    currentDate.year === today.getFullYear() &&
-    currentDate.month === today.getMonth();
-
-  const isSelected = day === selectedDay;
-
-  return (
-    <div
-      key={index}
-      onClick={() => day && setSelectedDay(day)}
-      className={`py-2 rounded-full transition cursor-pointer
-        ${day
-          ? isSelected
-            ? "bg-yellow-700 text-white font-bold"
-            : isToday
-            ? "bg-yellow-500 text-black font-bold"
-            : "hover:bg-neutral-800"
-          : "cursor-default"}
-      `}
-    >
-      {day || ""}
-    </div>
-  );
-})}
-              </motion.div>
-            </AnimatePresence>
+                {day}
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Eventos del día seleccionado */}
-        <AnimatePresence>
-          {selectedEvents && (
-            <motion.div
-              key="eventos"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 15 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-6"
-            >
-              {selectedEvents.map((evento, i) => (
-                <div
-                  key={i}
-                  className="flex justify-between items-center bg-neutral-900 border border-neutral-800 rounded-xl p-5"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-yellow-500 p-3 rounded-full">
-                      {evento.tipo === "Entrenamiento" ? (
-                        <Dumbbell className="text-black w-6 h-6" />
-                      ) : (
-                        <Monitor className="text-black w-6 h-6" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-white">
-                        {evento.tipo}
-                      </h3>
-                      <p className="text-gray-400">{evento.descripcion}</p>
-                    </div>
-                  </div>
-                  {evento.hora && (
-                    <div className="text-right text-gray-300 text-sm">
-                      <p>{evento.hora}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* TÍTULO */}
+        <h2 className="text-3xl font-bold mt-4 mb-6 text-center tracking-wide">
+          {filtro === "todos" ? "Próximos Eventos" : "Resultados del Filtro"}
+        </h2>
 
-        {!selectedEvents && selectedDay && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center text-gray-400 mt-4"
-          >
-            No hay actividades para este día.
-          </motion.p>
-        )}
+        {/* LISTA DE EVENTOS */}
+        <div className="space-y-6">
+          {eventosFiltrados.map((e) => (
+            <div
+              key={e.id}
+              className="flex justify-between items-center bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-xl hover:scale-[1.02] transition-all"
+            >
+              <div className="flex items-center space-x-5">
+                <div className={`${e.color} p-4 rounded-full shadow-md`}>
+                  {e.icono}
+                </div>
+
+                <div>
+                  <h3 className="text-2xl font-bold flex items-center gap-2">
+                    {e.tipo}
+                    {e.tag && (
+                      <span className="text-xs bg-yellow-500 text-black px-2 py-1 rounded-full font-semibold">
+                        {e.tag}
+                      </span>
+                    )}
+                  </h3>
+                  <p className="text-gray-400">{e.descripcion}</p>
+                </div>
+              </div>
+
+              <div className="text-right text-gray-300 text-sm">
+                <p className="font-semibold text-lg">{e.fecha}</p>
+                <p className="text-yellow-400 font-medium">{e.hora}</p>
+              </div>
+            </div>
+          ))}
+
+          {eventosFiltrados.length === 0 && (
+            <div className="text-center text-gray-400 py-10 text-lg">
+              No hay eventos para esta categoría.
+            </div>
+          )}
+        </div>
       </main>
 
       <Footer />
