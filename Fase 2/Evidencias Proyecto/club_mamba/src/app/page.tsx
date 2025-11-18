@@ -93,7 +93,7 @@ export default function HomePage() {
         <div className="flex flex-wrap justify-center gap-4 mt-8">
           {(rol === "entrenador" || rol === "jugador") && (
             <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:scale-105 hover:bg-yellow-500 transition">
-              <Link href="/entrenamientos_partidos" className="flex items-center gap-2">
+              <Link href="/pages/entrenamientos_partidos" className="flex items-center gap-2">
                 <Ban size={18} /> Entrenamientos
               </Link>
             </Button>
@@ -101,7 +101,7 @@ export default function HomePage() {
 
           {rol === "entrenador" && (
             <Button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 hover:scale-105 hover:bg-yellow-500 transition">
-              <Link href="/asistencia" className="flex items-center gap-2">
+              <Link href="/pages/asistencia" className="flex items-center gap-2">
                 <Plus size={18} /> Registrar Asistencia
               </Link>
             </Button>
