@@ -1,5 +1,0 @@
-@import "tailwindcss";
-
-.yellow-filter {
-  filter: invert(70%) sepia(90%) saturate(400%) hue-rotate(10deg) brightness(100%);
-}
