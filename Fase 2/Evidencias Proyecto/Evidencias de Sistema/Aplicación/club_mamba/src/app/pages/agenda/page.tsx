@@ -1,221 +1,243 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Dumbbell, Monitor } from "lucide-react";
+import {
+  CalendarDays,
+  Dumbbell,
+  Trophy,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 export default function AgendaPage() {
-  const today = new Date();
-  const [currentDate, setCurrentDate] = useState({
-    month: today.getMonth(),
-    year: today.getFullYear(),
+  const [eventsBD, setEventsBD] = useState([]); // eventos reales de BD
+  const [loading, setLoading] = useState(true);
+
+  // ==========================
+  // Cargar eventos desde la API
+  // ==========================
+  useEffect(() => {
+    async function loadEvents() {
+      try {
+        const res = await fetch("/api/eventos/agenda_eventos");
+        const data = await res.json();
+        setEventsBD(data);
+      } catch (err) {
+        console.error("Error cargando eventos:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadEvents();
+  }, []);
+
+  // ==========================
+  //   CALENDARIO
+  // ==========================
+  const hoy = new Date();
+
+  const [fecha, setFecha] = useState({
+    mes: hoy.getMonth(),
+    año: hoy.getFullYear(),
   });
 
-  const [selectedDay, setSelectedDay] = useState(null);
-  const [direction, setDirection] = useState(0); // Para animación: -1 atrás, 1 adelante
+  const { mes, año } = fecha;
 
-  // Eventos de ejemplo
-  const events = {
-    "2025-11-10": [
-      { tipo: "Partido", descripcion: "Visita", hora: "18:00 – 20:00" },
-    ],
-    "2025-11-21": [
-      { tipo: "Entrenamiento", descripcion: "Participante" },
-    ],
-  };
-
-  const months = [
-    "enero", "febrero", "marzo", "abril", "mayo", "junio",
-    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+  const nombresMes = [
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre",
   ];
 
-  const getDaysInMonth = (month, year) => {
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const firstDay = new Date(year, month, 1).getDay();
-    const adjustedFirstDay = (firstDay + 6) % 7;
-    const days = [];
+  const nombresDias = [
+    "Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado",
+  ];
 
-    for (let i = 0; i < adjustedFirstDay; i++) {
-      days.push(null);
-    }
-    for (let d = 1; d <= daysInMonth; d++) {
-      days.push(d);
-    }
+  const cambiarMes = (direccion) => {
+    setFecha((prev) => {
+      let nuevoMes = prev.mes + direccion;
+      let nuevoAño = prev.año;
 
-    return days;
-  };
+      if (nuevoMes < 0) {
+        nuevoMes = 11;
+        nuevoAño -= 1;
+      } else if (nuevoMes > 11) {
+        nuevoMes = 0;
+        nuevoAño += 1;
+      }
 
-  const prevMonth = () => {
-    if (currentDate.year === 1900 && currentDate.month === 0) return;
-    setDirection(-1);
-    setCurrentDate((prev) => {
-      if (prev.month === 0) return { month: 11, year: prev.year - 1 };
-      return { ...prev, month: prev.month - 1 };
+      return { mes: nuevoMes, año: nuevoAño };
     });
-    setSelectedDay(null);
   };
 
-  const nextMonth = () => {
-    if (currentDate.year === 2100 && currentDate.month === 11) return;
-    setDirection(1);
-    setCurrentDate((prev) => {
-      if (prev.month === 11) return { month: 0, year: prev.year + 1 };
-      return { ...prev, month: prev.month + 1 };
-    });
-    setSelectedDay(null);
+  const primerDiaSemana = new Date(año, mes, 1).getDay() || 7;
+  const diasEnMes = new Date(año, mes + 1, 0).getDate();
+
+  const hoyDia = hoy.getDate();
+  const esMesActual = hoy.getMonth() === mes && hoy.getFullYear() === año;
+
+  // ==========================
+  //   FECHA SELECCIONADA
+  // ==========================
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
+
+  // Formatear fecha como "Martes 21 Nov"
+  const formatearFecha = (day) => {
+    const fechaReal = new Date(año, mes, day);
+    const nombreDia = nombresDias[fechaReal.getDay()];
+    const nombreMes = nombresMes[mes].slice(0, 3);
+    return `${nombreDia} ${day} ${nombreMes}`;
   };
 
-  const days = getDaysInMonth(currentDate.month, currentDate.year);
-  const todayDay =
-    currentDate.year === today.getFullYear() &&
-    currentDate.month === today.getMonth()
-      ? today.getDate()
-      : null;
+  // ==========================
+  //   FILTROS
+  // ==========================
+  const [filtro, setFiltro] = useState("todos");
 
-  const selectedDateKey =
-    selectedDay &&
-    `${currentDate.year}-${String(currentDate.month + 1).padStart(2, "0")}-${String(
-      selectedDay
-    ).padStart(2, "0")}`;
-
-  const selectedEvents = selectedDateKey ? events[selectedDateKey] : null;
+  const eventosFiltrados = eventsBD.filter((e) => {
+    if (filtro !== "todos" && e.categoria !== filtro) return false;
+    if (fechaSeleccionada && e.fecha !== fechaSeleccionada) return false;
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       <Nav />
 
       <main className="flex-grow px-6 py-12 max-w-6xl mx-auto w-full">
-        <h1 className="text-5xl font-extrabold text-center mb-10 text-gray-100">
+        <h1 className="text-5xl font-extrabold text-center mb-8 tracking-wide">
           AGENDA
         </h1>
 
-        {/* Calendario */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 mb-10 shadow-lg overflow-hidden">
+        {/* FILTROS */}
+        <div className="flex flex-wrap justify-center gap-4 mb-12">
+          {[
+            { nombre: "Todos", valor: "todos" },
+            { nombre: "Entrenamientos", valor: "entrenamiento" },
+            { nombre: "Partidos", valor: "partido" },
+          ].map((btn) => (
+            <button
+              key={btn.valor}
+              onClick={() => {
+                setFiltro(btn.valor);
+                setFechaSeleccionada(null);
+              }}
+              className={`px-5 py-2 rounded-full border font-semibold transition
+                ${
+                  filtro === btn.valor
+                    ? "bg-yellow-500 text-black border-yellow-500"
+                    : "border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
+                }`}
+            >
+              {btn.nombre}
+            </button>
+          ))}
+        </div>
+
+        {/* CALENDARIO */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 mb-14 shadow-2xl">
           <div className="flex justify-between items-center mb-6">
             <button
-              onClick={prevMonth}
-              className="text-yellow-400 hover:text-yellow-300 text-2xl transition-transform active:scale-90"
+              onClick={() => cambiarMes(-1)}
+              className="text-yellow-400 hover:text-yellow-300 text-2xl"
             >
-              &lt;
+              <ChevronLeft size={28} />
             </button>
-            <h2 className="text-2xl font-semibold capitalize">
-              {months[currentDate.month]} {currentDate.year}
+
+            <h2 className="text-3xl font-bold tracking-wide">
+              {nombresMes[mes]} {año}
             </h2>
+
             <button
-              onClick={nextMonth}
-              className="text-yellow-400 hover:text-yellow-300 text-2xl transition-transform active:scale-90"
+              onClick={() => cambiarMes(1)}
+              className="text-yellow-400 hover:text-yellow-300 text-2xl"
             >
-              &gt;
+              <ChevronRight size={28} />
             </button>
           </div>
 
-          {/* Días de la semana */}
-          <div className="grid grid-cols-7 text-center text-yellow-400 font-semibold mb-4">
-            <span>L</span>
-            <span>M</span>
-            <span>M</span>
-            <span>J</span>
-            <span>V</span>
-            <span>S</span>
-            <span>D</span>
+          <div className="grid grid-cols-7 text-center text-yellow-400 font-semibold mb-3">
+            <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
           </div>
 
-          {/* Animación al cambiar de mes */}
-          <div className="relative h-[260px] overflow-hidden">
-            <AnimatePresence mode="wait" initial={false} custom={direction}>
-              <motion.div
-                key={`${currentDate.month}-${currentDate.year}`}
-                custom={direction}
-                initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
-                transition={{ duration: 0.35 }}
-                className="grid grid-cols-7 text-center gap-y-3 text-gray-200 absolute inset-0"
-              >
-                {days.map((day, index) => {
-  const isToday =
-    day === todayDay &&
-    currentDate.year === today.getFullYear() &&
-    currentDate.month === today.getMonth();
+          <div className="grid grid-cols-7 text-center gap-y-4 text-gray-200">
+            {Array.from({ length: primerDiaSemana - 1 }).map((_, i) => (
+              <div key={`empty-${i}`} />
+            ))}
 
-  const isSelected = day === selectedDay;
+            {Array.from({ length: diasEnMes }, (_, i) => i + 1).map((day) => {
+              const fechaFormateada = formatearFecha(day);
 
-  return (
-    <div
-      key={index}
-      onClick={() => day && setSelectedDay(day)}
-      className={`py-2 rounded-full transition cursor-pointer
-        ${day
-          ? isSelected
-            ? "bg-yellow-700 text-white font-bold"
-            : isToday
-            ? "bg-yellow-500 text-black font-bold"
-            : "hover:bg-neutral-800"
-          : "cursor-default"}
-      `}
-    >
-      {day || ""}
-    </div>
-  );
-})}
-              </motion.div>
-            </AnimatePresence>
+              return (
+                <div
+                  key={day}
+                  onClick={() => setFechaSeleccionada(fechaFormateada)}
+                  className={`py-2 rounded-full cursor-pointer transition-all
+                    ${
+                      esMesActual && day === hoyDia
+                        ? "bg-yellow-500 text-black font-bold shadow-lg scale-110"
+                        : "hover:bg-neutral-800"
+                    }
+                    ${
+                      fechaSeleccionada === fechaFormateada
+                        ? "ring-2 ring-yellow-500"
+                        : ""
+                    }
+                  `}
+                >
+                  {day}
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Eventos del día seleccionado */}
-        <AnimatePresence>
-          {selectedEvents && (
-            <motion.div
-              key="eventos"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 15 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-6"
-            >
-              {selectedEvents.map((evento, i) => (
-                <div
-                  key={i}
-                  className="flex justify-between items-center bg-neutral-900 border border-neutral-800 rounded-xl p-5"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-yellow-500 p-3 rounded-full">
-                      {evento.tipo === "Entrenamiento" ? (
-                        <Dumbbell className="text-black w-6 h-6" />
-                      ) : (
-                        <Monitor className="text-black w-6 h-6" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-white">
-                        {evento.tipo}
-                      </h3>
-                      <p className="text-gray-400">{evento.descripcion}</p>
-                    </div>
-                  </div>
-                  {evento.hora && (
-                    <div className="text-right text-gray-300 text-sm">
-                      <p>{evento.hora}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <h2 className="text-3xl font-bold mt-4 mb-6 text-center tracking-wide">
+          {fechaSeleccionada
+            ? `Eventos del ${fechaSeleccionada}`
+            : filtro === "todos"
+            ? "Próximos Eventos"
+            : "Resultados del Filtro"}
+        </h2>
 
-        {!selectedEvents && selectedDay && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center text-gray-400 mt-4"
-          >
-            No hay actividades para este día.
-          </motion.p>
-        )}
+        {/* LISTA */}
+        <div className="space-y-6">
+          {loading ? (
+            <div className="text-center text-gray-400">Cargando eventos...</div>
+          ) : eventosFiltrados.length === 0 ? (
+            <div className="text-center text-gray-400 py-10 text-lg">
+              No hay eventos para esta fecha.
+            </div>
+          ) : (
+            eventosFiltrados.map((e) => (
+              <div
+                key={e.id}
+                className="flex justify-between items-center bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-xl hover:scale-[1.02] transition-all"
+              >
+                <div className="flex items-center space-x-5">
+                  <div className={`${e.color} p-4 rounded-full shadow-md`}>
+                    {e.tipo === "entrenamiento" ? (
+                      <Dumbbell className="text-black w-7 h-7" />
+                    ) : (
+                      <Trophy className="text-black w-7 h-7" />
+                    )}
+                  </div>
+
+                  <div>
+                    <h3 className="text-2xl font-bold">{e.tipo}</h3>
+                    <p className="text-gray-400">{e.descripcion}</p>
+                  </div>
+                </div>
+
+                <div className="text-right text-gray-300 text-sm">
+                  <p className="font-semibold text-lg">{e.fecha}</p>
+                  <p className="text-yellow-400 font-medium">{e.hora}</p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </main>
 
       <Footer />
