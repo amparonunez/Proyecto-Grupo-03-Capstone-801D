@@ -43,6 +43,9 @@ export default function RegisterPage() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
+      options: {
+        emailRedirectTo: "http://localhost:3000/pages/confirmacion",
+      },
     });
 
     if (signUpError) {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,6 +18,10 @@ export const metadata: Metadata = {
   title: "Mamba Club",
   description: "Mamba Club de melipilla",
 };
+export const supabase = createBrowserSupabaseClient({
+  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+});
 
 export default function RootLayout({
   children,
