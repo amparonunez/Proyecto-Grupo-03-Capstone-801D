@@ -44,8 +44,8 @@ export default function RegisterPage() {
       email: formData.email,
       password: formData.password,
       options: {
-        emailRedirectTo: "http://localhost:3000/pages/confirmacion",
-      },
+        emailRedirectTo: "https://club-mamba.vercel.app/auth/confirm"
+      }
     });
 
     if (signUpError) {

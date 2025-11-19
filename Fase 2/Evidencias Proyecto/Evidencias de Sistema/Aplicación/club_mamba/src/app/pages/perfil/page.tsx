@@ -9,10 +9,10 @@ import AuthGuard from "@/components/AuthGuard";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function PerfilPage() {
-  const [activeTab, setActiveTab] = useState("datos");
-  const [usuario, setUsuario] = useState(null);
-  const [stats, setStats] = useState({});
-  const [entrenador, setEntrenador] = useState(null);
+  const [activeTab, setActiveTab] = useState<"datos" | "estadisticas">("datos");
+  const [usuario, setUsuario] = useState<any>(null);
+  const [stats, setStats] = useState<any>({});
+  const [entrenador, setEntrenador] = useState<any>(null);
 
   useEffect(() => {
     const fetchPerfil = async () => {
@@ -27,7 +27,6 @@ export default function PerfilPage() {
 
         if (!res.ok) throw new Error(json.error || "Error al cargar perfil");
 
-        // 👇️ Agregamos la URL de foto pública (si existe)
         setUsuario({
           ...json.usuario,
           email: user.email,
@@ -54,8 +53,8 @@ export default function PerfilPage() {
       <div className="min-h-screen bg-gray-100">
         <Nav />
         <div className="min-h-screen bg-black text-white flex flex-col items-center py-12 px-6">
-          {/* Contenedor principal */}
           <div className="bg-neutral-900 w-full max-w-4xl rounded-2xl shadow-xl p-10 flex flex-col md:flex-row gap-10 items-center md:items-start">
+
             {/* Columna izquierda */}
             <div className="flex flex-col items-center text-center w-full md:w-1/3">
               <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-yellow-500 mb-4">
@@ -78,7 +77,6 @@ export default function PerfilPage() {
                   : usuario?.rol}
               </p>
 
-              {/* Botones de pestañas */}
               <div className="flex gap-4 mt-8">
                 <button
                   onClick={() => setActiveTab("datos")}
@@ -110,55 +108,56 @@ export default function PerfilPage() {
                   <h3 className="text-xl font-semibold text-yellow-500 border-b border-neutral-700 pb-2 mb-6">
                     Datos del perfil
                   </h3>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
                     <div className="flex flex-col">
-                      <span className="text-neutral-400 mb-1">
-                        Correo electrónico
-                      </span>
-                      <span className="font-medium">
-                        {usuario?.email || "—"}
-                      </span>
+                      <span className="text-neutral-400 mb-1">Correo electrónico</span>
+                      <span className="font-medium">{usuario?.email || "—"}</span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-neutral-400 mb-1">Puesto</span>
-                      <span className="font-medium capitalize">
-                        {usuario?.puesto}
-                      </span>
+                      <span className="text-neutral-400 mb-1">Posición / Puesto</span>
+                      <span className="font-medium capitalize">{usuario?.puesto}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-neutral-400 mb-1">Nivel</span>
-                      <span className="font-medium capitalize">
-                        {usuario?.nivel}
-                      </span>
+                      <span className="font-medium capitalize">{usuario?.nivel}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-neutral-400 mb-1">Estatura</span>
+                      <span className="font-medium">{usuario?.estatura || "—"} cm</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-neutral-400 mb-1">Peso</span>
+                      <span className="font-medium">{usuario?.peso || "—"} kg</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-neutral-400 mb-1">Talla de uniforme</span>
+                      <span className="font-medium">{usuario?.talla_uniforme || "—"}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-neutral-400 mb-1">RUT</span>
-                      <span className="font-medium">{usuario?.rut}</span>
+                      <span className="font-medium">{usuario?.rut || "—"}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-neutral-400 mb-1">Contacto de emergencia</span>
+                      <span className="font-medium">{usuario?.contacto_emergencia || "—"}</span>
                     </div>
                   </div>
 
-                  {/* Sección especial para entrenadores */}
                   {usuario?.rol === "entrenador" && entrenador && (
                     <div className="mt-10 bg-neutral-800 p-6 rounded-lg">
                       <h4 className="text-lg text-yellow-400 font-semibold mb-4">
                         Sección de Entrenador
                       </h4>
-                      <p>
-                        Total de entrenamientos:{" "}
-                        {entrenador.totalEntrenamientos}
-                      </p>
+                      <p>Total de entrenamientos: {entrenador.totalEntrenamientos}</p>
                       <p>Total de partidos: {entrenador.totalPartidos}</p>
 
-                      {entrenador.recientes.length > 0 && (
+                      {entrenador.recientes?.length > 0 && (
                         <>
-                          <p className="mt-4 text-sm text-neutral-400">
-                            Últimos eventos creados:
-                          </p>
+                          <p className="mt-4 text-sm text-neutral-400">Últimos eventos creados:</p>
                           <ul className="mt-2 space-y-1 text-sm">
-                            {entrenador.recientes.map((e) => (
-                              <li key={e.id}>
-                                • {e.tipo} — {e.lugar} ({e.fecha})
-                              </li>
+                            {entrenador.recientes.map((e: any) => (
+                              <li key={e.id}>• {e.tipo} — {e.lugar} ({e.fecha})</li>
                             ))}
                           </ul>
                         </>
@@ -166,7 +165,6 @@ export default function PerfilPage() {
                     </div>
                   )}
 
-                  {/* Botón editar */}
                   <div className="mt-10">
                     <Link
                       href="/pages/editar_perfil"
@@ -201,7 +199,7 @@ export default function PerfilPage() {
   );
 }
 
-function Stat({ label, value }) {
+function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="bg-neutral-800 rounded-lg p-4">
       <p className="text-3xl font-bold text-yellow-500">{value}</p>
