@@ -1,29 +1,27 @@
-"use client"; // 👈 si estás en App Router y necesitas interactividad
+"use client"; // 👈 Necesario para usar localStorage, supabase, etc.
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import {
-  Home,
-  Calendar,
-  CheckSquare,
-  Users,
-  User,
-  Menu,
-} from "lucide-react";
-
+import { Home, Calendar, CheckSquare, Users, User, Menu } from "lucide-react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const [menuAbierto, setMenuAbierto] = useState(false);
-  const [usuario, setUsuario] = useState(null); // guarda el usuario autenticado
-  const [nombre, setNombre] = useState(
-    localStorage.getItem("nombreUsuario") || ""
-  ); // ⚡ carga instantánea
+  const [usuario, setUsuario] = useState(null);
+  const [nombre, setNombre] = useState(""); // ← corregido (antes: localStorage)
   const menuRef = useRef(null);
   const [rol, setRol] = useState(null);
   const router = useRouter();
+
+  // ✅ CARGAR nombreUsuario desde localStorage SOLO en el navegador
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedName = localStorage.getItem("nombreUsuario");
+      if (savedName) setNombre(savedName);
+    }
+  }, []);
 
   // 🔹 Obtener sesión y datos del usuario
   useEffect(() => {
@@ -31,11 +29,12 @@ const Navbar = () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
       if (user) {
         setUsuario(user);
 
-        // si no hay nombre almacenado, lo consultamos
-        if (!localStorage.getItem("nombreUsuario")) {
+        // Si no está guardado el nombre, lo consultamos desde BDD
+        if (typeof window !== "undefined" && !localStorage.getItem("nombreUsuario")) {
           const { data, error } = await supabase
             .from("usuarios")
             .select("nombre")
@@ -50,20 +49,14 @@ const Navbar = () => {
       }
     };
 
-    fetchUser();
-
     const fetchUserRole = async () => {
       const {
         data: { user },
         error: userError,
       } = await supabase.auth.getUser();
 
-      if (userError || !user) {
-        console.log("No hay usuario logueado");
-        return;
-      }
+      if (userError || !user) return;
 
-      // ✅ Pedir rol al backend (usa service_role, ignora RLS)
       const res = await fetch("/api/usuarios/rol", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -71,40 +64,41 @@ const Navbar = () => {
       });
 
       const result = await res.json();
-
-      if (res.ok && result.rol) {
-        setRol(result.rol);
-      } else {
-        console.error(result.error);
-      }
+      if (res.ok && result.rol) setRol(result.rol);
     };
 
+    fetchUser();
     fetchUserRole();
+
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") {
         setUsuario(null);
         setNombre("");
-        localStorage.removeItem("nombreUsuario");
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("nombreUsuario");
+        }
       }
     });
 
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  // 🔹 Logout
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    localStorage.removeItem("nombreUsuario");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("nombreUsuario");
+    }
     setUsuario(null);
     setNombre("");
-
     router.push("/");
-
-    window.location.reload(); // recarga para limpiar estado
+    window.location.reload();
   };
-  // 🔹 Cierra el menú al hacer clic fuera
+
+  // 🔹 Cerrar menú al hacer clic fuera
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuAbierto(false);
       }
     };
@@ -128,9 +122,10 @@ const Navbar = () => {
       roles: ["entrenador"],
     },
   ];
+
   return (
     <nav className="bg-black text-white px-15 py-9 md:py-4 flex justify-between items-center border-b border-white">
-      {/* Logo */}
+      {/* Logo PC */}
       <div className="hidden md:flex items-center gap-2">
         <Image
           src="/img/Mamba logo render.png"
@@ -139,13 +134,9 @@ const Navbar = () => {
           height={120}
           className="h-15 w-15"
         />
-        <div>
-          {/* <h1 className="text-yellow-400 font-extrabold text-lg">MAMBA</h1>
-          <p className="text-xs text-yellow-500 -mt-1">CLUB MELIPILLA</p> */}
-        </div>
       </div>
 
-      {/* Logo Movil*/}
+      {/* Logo Móvil */}
       <div className="absolute left-1/2 transform -translate-x-1/2 flex md:hidden items-center justify-center">
         <Image
           src="/img/Mamba logo render.png"
@@ -154,13 +145,9 @@ const Navbar = () => {
           height={120}
           className="h-15 w-15"
         />
-        <div>
-          {/* <h1 className="text-yellow-400 font-extrabold text-lg">MAMBA</h1>
-          <p className="text-xs text-yellow-500 -mt-1">CLUB MELIPILLA</p> */}
-        </div>
       </div>
 
-      {/* Links */}
+      {/* Links versión escritorio */}
       <div className="hidden md:flex items-center gap-6 font-medium">
         <Link href="/" className="hover:text-yellow-400">
           Inicio
@@ -168,21 +155,20 @@ const Navbar = () => {
         <Link href="/pages/agenda" className="hover:text-yellow-400">
           Agenda
         </Link>
+
         {(rol === "jugador" || rol === "entrenador") && (
           <Link href="/pages/asistencia" className="hover:text-yellow-400">
             Asistencia
           </Link>
         )}
+
         {rol === "entrenador" && (
-          <Link
-            href="/pages/usuarios"
-            className="hover:text-yellow-400 flex items-center gap-1"
-          >
+          <Link href="/pages/usuarios" className="hover:text-yellow-400 flex items-center gap-1">
             Usuarios
           </Link>
         )}
 
-        {/* Menú de usuario */}
+        {/* Menú usuario */}
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuAbierto(!menuAbierto)}
@@ -195,7 +181,6 @@ const Navbar = () => {
           {menuAbierto && (
             <div className="absolute right-0 mt-3 w-48 bg-[#181818] border border-gray-700 rounded-xl shadow-lg animate-fadeIn">
               <ul className="flex flex-col text-sm font-medium">
-                {/* Solo mostrar "Iniciar Sesion" si NO está autenticado */}
                 {!usuario && (
                   <li>
                     <Link
@@ -208,7 +193,6 @@ const Navbar = () => {
                   </li>
                 )}
 
-                {/* Mostrar perfil y cerrar sesión si hay usuario */}
                 {usuario && (
                   <>
                     <li>
@@ -236,20 +220,18 @@ const Navbar = () => {
         </div>
       </div>
 
+      {/* Sidebar móvil */}
       <div className="md:hidden">
-        {" "}
-        {/* 👈 todo esto solo visible en móviles */}
-        {/* Botón hamburguesa */}
         <button
           onClick={() => setMenuAbierto(true)}
           className="fixed top-5 left-5 z-50 bg-[#111] p-2 rounded-lg border border-yellow-400"
         >
           <Menu size={24} className="text-yellow-400" />
         </button>
-        {/* Sidebar móvil */}
+
         <aside
           className={`fixed top-0 left-0 h-full w-64 bg-black border-r border-[#222] text-white flex flex-col justify-between transform transition-transform duration-300 ease-in-out z-50 ${
-      menuAbierto ? "translate-x-0" : "-translate-x-full"
+            menuAbierto ? "translate-x-0" : "-translate-x-full"
           }`}
         >
           <div>
@@ -262,14 +244,6 @@ const Navbar = () => {
                 height={60}
                 className="object-contain"
               />
-              <div className="flex flex-col">
-                <span className="text-yellow-400 font-extrabold text-xl">
-                  MAMBA
-                </span>
-                <span className="text-xs text-yellow-500 font-medium tracking-wider">
-                  MELIPILLA CLUB
-                </span>
-              </div>
             </div>
 
             {/* Links */}
@@ -292,59 +266,42 @@ const Navbar = () => {
           </div>
 
           {/* Usuario */}
-      <div className="border-t border-[#222] flex items-center justify-between px-6 py-4">
-  <div className="flex items-center gap-3">
-    <button
-      className="flex items-center gap-2 hover:text-yellow-400 transition"
-      onClick={() => {
-        setMenuAbierto(false);
-        if (usuario) {
-          router.push("/pages/perfil");
-        } else {
-          router.push("/pages/login");
-        }
-      }}
-    >
-      <User className="text-yellow-400" size={20} />
-      <span className="font-medium text-sm">
-        {usuario ? nombre : "Iniciar Sesión"}
-      </span>
-    </button>
-  </div>
+          <div className="border-t border-[#222] flex items-center justify-between px-6 py-4">
+            <button
+              className="flex items-center gap-2 hover:text-yellow-400 transition"
+              onClick={() => {
+                setMenuAbierto(false);
+                usuario ? router.push("/pages/perfil") : router.push("/pages/login");
+              }}
+            >
+              <User className="text-yellow-400" size={20} />
+              <span className="font-medium text-sm">
+                {usuario ? nombre : "Iniciar Sesión"}
+              </span>
+            </button>
 
-  {usuario && (
-    <button
-      onClick={() => {
-      setMenuAbierto(false);
-      handleLogout();
-    }}
-      className="text-xs text-gray-400 hover:text-yellow-400"
-    >
-      Salir
-    </button>
-  )}
-</div>
+            {usuario && (
+              <button
+                onClick={() => {
+                  setMenuAbierto(false);
+                  handleLogout();
+                }}
+                className="text-xs text-gray-400 hover:text-yellow-400"
+              >
+                Salir
+              </button>
+            )}
+          </div>
         </aside>
-        {/* Fondo oscuro difuminado */}
+
         <div
           onClick={() => setMenuAbierto(false)}
           className={`fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 z-30 ${
-            menuAbierto
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
+            menuAbierto ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           }`}
         ></div>
-        {/* Botón hamburguesa (solo visible cuando el menú está cerrado) */}
-        {!menuAbierto && (
-          <button
-            onClick={() => setMenuAbierto(true)}
-            className="fixed top-5 left-5 z-50 bg-[#111] p-2 rounded-lg border border-yellow-400 transition-opacity duration-300"
-          >
-            <Menu size={24} className="text-yellow-400" />
-          </button>
-        )}
       </div>
-      {/* Animación */}
+
       <style jsx>{`
         @keyframes fadeIn {
           from {
@@ -365,4 +322,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

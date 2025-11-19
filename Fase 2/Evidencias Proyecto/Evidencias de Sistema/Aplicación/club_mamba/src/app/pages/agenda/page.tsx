@@ -11,8 +11,21 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+/* =============================
+   TIPOS DE EVENTOS (ARREGLA TS)
+   ============================= */
+interface Evento {
+  id: string;
+  tipo: string;
+  color: string;
+  descripcion: string;
+  categoria: string;
+  fecha: string;
+  hora: string;
+}
+
 export default function AgendaPage() {
-  const [eventsBD, setEventsBD] = useState([]); // eventos reales de BD
+  const [eventsBD, setEventsBD] = useState<Evento[]>([]); // eventos reales
   const [loading, setLoading] = useState(true);
 
   // ==========================
@@ -54,7 +67,7 @@ export default function AgendaPage() {
     "Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado",
   ];
 
-  const cambiarMes = (direccion) => {
+  const cambiarMes = (direccion: number) => {
     setFecha((prev) => {
       let nuevoMes = prev.mes + direccion;
       let nuevoAño = prev.año;
@@ -80,10 +93,10 @@ export default function AgendaPage() {
   // ==========================
   //   FECHA SELECCIONADA
   // ==========================
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState<string | null>(null);
 
   // Formatear fecha como "Martes 21 Nov"
-  const formatearFecha = (day) => {
+  const formatearFecha = (day: number) => {
     const fechaReal = new Date(año, mes, day);
     const nombreDia = nombresDias[fechaReal.getDay()];
     const nombreMes = nombresMes[mes].slice(0, 3);
