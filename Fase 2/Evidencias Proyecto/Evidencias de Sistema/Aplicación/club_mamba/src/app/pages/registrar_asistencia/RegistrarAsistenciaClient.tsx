@@ -19,6 +19,7 @@ export default function RegistrarAsistenciaClient() {
   const [mensaje, setMensaje] = useState("");
   const [cargando, setCargando] = useState(true);
   const [asistenciaRegistrada, setAsistenciaRegistrada] = useState(false);
+  const [menuPuntosActivo, setMenuPuntosActivo] = useState(null);
   
   const searchParams = useSearchParams();
   const eventoParam = searchParams.get("id");
@@ -135,6 +136,9 @@ export default function RegistrarAsistenciaClient() {
           asistencias: 0,
           robos: 0,
           bloqueos: 0,
+          triples: 0,
+          dobles: 0,
+          tiros_libres: 0,
         }));
 
         console.log("🎮 Jugadores creados:", jugadoresInicial);
@@ -184,6 +188,24 @@ export default function RegistrarAsistenciaClient() {
     setJugadores(updated);
   };
 
+  const incrementarPuntos = (index, tipo) => {
+    const updated = [...jugadores];
+    const jugador = updated[index];
+
+    if (tipo === 1) {
+      jugador.puntos += 1;
+      jugador.tiros_libres = (jugador.tiros_libres || 0) + 1;
+    } else if (tipo === 2) {
+      jugador.puntos += 2;
+      jugador.dobles = (jugador.dobles || 0) + 1;
+    } else if (tipo === 3) {
+      jugador.puntos += 3;
+      jugador.triples = (jugador.triples || 0) + 1;
+    }
+
+    setJugadores(updated);
+  };
+
   const transicionFase = (nuevaFase, callbackExtra = () => {}) => {
     setAnimando(true);
     setTimeout(() => {
@@ -229,6 +251,9 @@ export default function RegistrarAsistenciaClient() {
         asistencias: jugadores.reduce((sum, j) => sum + j.asistencias, 0),
         robos: jugadores.reduce((sum, j) => sum + j.robos, 0),
         bloqueos: jugadores.reduce((sum, j) => sum + j.bloqueos, 0),
+        triples: jugadores.reduce((sum, j) => sum + (j.triples || 0), 0),
+        dobles: jugadores.reduce((sum, j) => sum + (j.dobles || 0), 0),
+        tiros_libres: jugadores.reduce((sum, j) => sum + (j.tiros_libres || 0), 0),
       };
 
       const datosAEnviar = {
@@ -277,6 +302,9 @@ export default function RegistrarAsistenciaClient() {
     asistencias: jugadores.reduce((sum, j) => sum + j.asistencias, 0),
     robos: jugadores.reduce((sum, j) => sum + j.robos, 0),
     bloqueos: jugadores.reduce((sum, j) => sum + j.bloqueos, 0),
+    triples: jugadores.reduce((sum, j) => sum + (j.triples || 0), 0),
+    dobles: jugadores.reduce((sum, j) => sum + (j.dobles || 0), 0),
+    tiros_libres: jugadores.reduce((sum, j) => sum + (j.tiros_libres || 0), 0),
   };
 
   const jugadoresOrdenados = [...jugadores].sort((a, b) => b.puntos - a.puntos);
@@ -468,19 +496,77 @@ export default function RegistrarAsistenciaClient() {
                             <td className="py-3 font-medium text-left">
                               {jugador.nombre} {jugador.apellidos}
                             </td>
-                            {["puntos", "rebotes", "asistencias", "robos", "bloqueos"].map(
-                              (campo) => (
-                                <td key={campo} className="py-2">
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    value={jugador[campo]}
-                                    onChange={(e) => cambiarEstadistica(index, campo, e.target.value)}
-                                    className="w-16 text-center bg-[#1E1E1E] border border-gray-600 rounded-lg py-1 text-white focus:outline-none focus:border-yellow-400"
-                                  />
-                                </td>
-                              )
-                            )}
+                            <td
+                              className="py-2 relative"
+                              onMouseEnter={() => setMenuPuntosActivo(index)}
+                              onMouseLeave={() => setMenuPuntosActivo(null)}
+                            >
+                              <div
+                                className="bg-[#111] border border-gray-700 rounded-lg px-3 py-2 cursor-pointer"
+                                onClick={() =>
+                                  setMenuPuntosActivo(
+                                    menuPuntosActivo === index ? null : index
+                                  )
+                                }
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="text-lg font-bold">{jugador.puntos}</span>
+                                  <span className="text-[11px] text-gray-400 px-2 py-1 bg-gray-800 rounded-md border border-white/5">
+                                    +1 / +2 / +3
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-gray-500 mt-1">
+                                  T3: {jugador.triples || 0} · T2: {jugador.dobles || 0} · TL: {jugador.tiros_libres || 0}
+                                </p>
+                              </div>
+
+                              <AnimatePresence>
+                                {menuPuntosActivo === index && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 8 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="absolute z-30 mt-2 w-56 bg-[#0f0f0f] border border-gray-700 rounded-xl shadow-2xl p-3"
+                                  >
+                                    <p className="text-xs text-gray-400 mb-2">Sumar puntos como:</p>
+                                    <div className="grid grid-cols-3 gap-2">
+                                      {[
+                                        { valor: 1, label: "1", desc: "Tiro libre", color: "from-emerald-500 to-green-400" },
+                                        { valor: 2, label: "2", desc: "Doble", color: "from-amber-500 to-orange-400" },
+                                        { valor: 3, label: "3", desc: "Triple", color: "from-cyan-500 to-blue-500" },
+                                      ].map((opcion) => (
+                                        <button
+                                          key={opcion.valor}
+                                          onClick={() => incrementarPuntos(index, opcion.valor)}
+                                          className={`py-3 rounded-lg text-white font-semibold text-lg bg-gradient-to-br ${opcion.color} shadow-md hover:shadow-lg transition`}
+                                        >
+                                          {opcion.label}
+                                          <p className="text-[10px] font-normal leading-tight">
+                                            {opcion.desc}
+                                          </p>
+                                        </button>
+                                      ))}
+                                    </div>
+                                    <p className="text-[11px] text-gray-500 mt-2">
+                                      El puntaje sube y también se contabiliza el tipo de lanzamiento.
+                                    </p>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </td>
+
+                            {["rebotes", "asistencias", "robos", "bloqueos"].map((campo) => (
+                              <td key={campo} className="py-2">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={jugador[campo]}
+                                  onChange={(e) => cambiarEstadistica(index, campo, e.target.value)}
+                                  className="w-16 text-center bg-[#1E1E1E] border border-gray-600 rounded-lg py-1 text-white focus:outline-none focus:border-yellow-400"
+                                />
+                              </td>
+                            ))}
                           </tr>
                         ))}
                       </tbody>

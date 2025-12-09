@@ -144,18 +144,62 @@ export async function POST(req) {
         asistencias: jugador.asistencias || 0,
         robos: jugador.robos || 0,
         bloqueos: jugador.bloqueos || 0,
+        // Guardamos el total de puntos; el desglose irá en tabla aparte
       }));
 
-      const { error: statsError } = await supabase
+      const { data: statsData, error: statsError } = await supabase
         .from("estadisticas")
         .upsert(registrosEstadisticas, { 
           onConflict: 'usuario_id,evento_id'
-        });
+        })
+        .select("id, usuario_id, evento_id");
 
       if (statsError) {
         console.warn("⚠️ API REGISTRO - Error en estadísticas:", statsError);
       } else {
         console.log("✅ API REGISTRO - Estadísticas guardadas para jugadores presentes");
+
+        // 🔄 Registrar desglose de puntos en tabla separada
+        const estadisticaIds = statsData?.map((s) => s.id).filter(Boolean) || [];
+
+        if (estadisticaIds.length > 0) {
+          // Limpieza previa para evitar duplicados en re-intentos
+          const { error: deleteError } = await supabase
+            .from("desglose_puntos")
+            .delete()
+            .in("estadistica_id", estadisticaIds);
+
+          if (deleteError) {
+            console.warn("⚠️ API REGISTRO - Error limpiando desglose previo:", deleteError);
+          }
+        }
+
+        const registrosDesglose =
+          statsData?.flatMap((stat) => {
+            const jugador = jugadores.find((j) => j.id === stat.usuario_id);
+            if (!jugador) return [];
+            const triples = Number(jugador.triples || 0);
+            const dobles = Number(jugador.dobles || 0);
+            const libres = Number(jugador.tiros_libres || 0);
+
+            const rows = [];
+            if (libres > 0) rows.push({ estadistica_id: stat.id, tipo_tiro: "tiro_libre", cantidad: libres });
+            if (dobles > 0) rows.push({ estadistica_id: stat.id, tipo_tiro: "doble", cantidad: dobles });
+            if (triples > 0) rows.push({ estadistica_id: stat.id, tipo_tiro: "triple", cantidad: triples });
+            return rows;
+          }) || [];
+
+        if (registrosDesglose.length > 0) {
+          const { error: desgloseError } = await supabase
+            .from("desglose_puntos")
+            .insert(registrosDesglose);
+
+          if (desgloseError) {
+            console.warn("⚠️ API REGISTRO - Error guardando desglose de puntos:", desgloseError);
+          } else {
+            console.log(`✅ API REGISTRO - Desglose de puntos guardado (${registrosDesglose.length} filas)`);
+          }
+        }
       }
     } catch (statsErr) {
       console.warn("⚠️ API REGISTRO - Error secundario en estadísticas:", statsErr);

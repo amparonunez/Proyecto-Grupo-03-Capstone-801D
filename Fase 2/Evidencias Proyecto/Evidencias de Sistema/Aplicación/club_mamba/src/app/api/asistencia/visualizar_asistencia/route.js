@@ -99,6 +99,32 @@ export async function GET(request) {
 
     console.log("📊 API VISUALIZAR - Resultados encontrados:", resultados?.length);
 
+    // 🔄 PASO 2.1: Obtener estadísticas con desglose de puntos
+    const { data: estadisticas, error: estadisticasError } = await supabase
+      .from("estadisticas")
+      .select(`
+        id,
+        usuario_id,
+        puntos,
+        rebotes,
+        asistencias,
+        robos,
+        bloqueos,
+        desglose:desglose_puntos ( tipo_tiro, cantidad )
+      `)
+      .eq("evento_id", eventoIdNum);
+
+    if (estadisticasError) {
+      console.warn("⚠️ API VISUALIZAR - No se pudieron cargar estadísticas detalladas:", estadisticasError);
+    } else {
+      console.log("📊 API VISUALIZAR - Estadísticas detalladas cargadas:", estadisticas?.length);
+    }
+
+    const mapaEstadisticas = new Map();
+    estadisticas?.forEach((stat) => {
+      mapaEstadisticas.set(stat.usuario_id, stat);
+    });
+
     // 🔄 PASO 3: Obtener datos de usuarios por separado
     if (!resultados || resultados.length === 0) {
       return NextResponse.json({
@@ -146,6 +172,17 @@ export async function GET(request) {
     // 🔄 PASO 4: Combinar datos de resultados y usuarios
     const jugadoresConEstadisticas = resultados.map(resultado => {
       const usuario = usuarios?.find(u => u.id === resultado.usuario_id);
+      const stat = mapaEstadisticas.get(resultado.usuario_id);
+      const desglose = stat?.desglose || [];
+      const desgloseContado = desglose.reduce(
+        (acc, d) => {
+          if (d.tipo_tiro === "triple") acc.triples += d.cantidad || 0;
+          if (d.tipo_tiro === "doble") acc.dobles += d.cantidad || 0;
+          if (d.tipo_tiro === "tiro_libre") acc.tiros_libres += d.cantidad || 0;
+          return acc;
+        },
+        { triples: 0, dobles: 0, tiros_libres: 0 }
+      );
       
       return {
         id: resultado.usuario_id,
@@ -153,11 +190,14 @@ export async function GET(request) {
         apellidos: usuario?.apellidos || "",
         puesto: usuario?.puesto || "Sin definir",
         presente: resultado.presente,
-        puntos: resultado.puntos || 0,
-        rebotes: resultado.rebotes || 0,
-        asistencias: resultado.asistencias || 0,
-        robos: resultado.robos || 0,
-        bloqueos: resultado.bloqueos || 0,
+        puntos: stat?.puntos ?? resultado.puntos ?? 0,
+        rebotes: stat?.rebotes ?? resultado.rebotes ?? 0,
+        asistencias: stat?.asistencias ?? resultado.asistencias ?? 0,
+        robos: stat?.robos ?? resultado.robos ?? 0,
+        bloqueos: stat?.bloqueos ?? resultado.bloqueos ?? 0,
+        triples: desgloseContado.triples,
+        dobles: desgloseContado.dobles,
+        tiros_libres: desgloseContado.tiros_libres,
         esJugadorActual: resultado.usuario_id === usuarioId
       };
     });
@@ -169,6 +209,9 @@ export async function GET(request) {
       asistencias: jugadoresConEstadisticas.reduce((sum, j) => sum + j.asistencias, 0),
       robos: jugadoresConEstadisticas.reduce((sum, j) => sum + j.robos, 0),
       bloqueos: jugadoresConEstadisticas.reduce((sum, j) => sum + j.bloqueos, 0),
+      triples: jugadoresConEstadisticas.reduce((sum, j) => sum + (j.triples || 0), 0),
+      dobles: jugadoresConEstadisticas.reduce((sum, j) => sum + (j.dobles || 0), 0),
+      tiros_libres: jugadoresConEstadisticas.reduce((sum, j) => sum + (j.tiros_libres || 0), 0),
       totalJugadores: jugadoresConEstadisticas.length,
       presentes: jugadoresConEstadisticas.filter(j => j.presente).length,
       ausentes: jugadoresConEstadisticas.filter(j => !j.presente).length
