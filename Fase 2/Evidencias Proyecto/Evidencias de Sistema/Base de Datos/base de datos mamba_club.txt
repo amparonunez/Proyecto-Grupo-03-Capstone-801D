@@ -107,6 +107,20 @@ create table if not exists resultados_finales (
 );
 
 -- ======================
+-- 8 Tabla DESGLOSE_PUNTOS
+-- ======================
+create table if not exists desglose_puntos (
+  id bigserial primary key,
+  estadistica_id bigint references estadisticas(id) on delete cascade,
+  tipo_tiro text not null check (tipo_tiro in ('tiro_libre', 'doble', 'triple')),
+  cantidad integer not null check (cantidad >= 0),
+  created_at timestamp with time zone default now()
+);
+
+
+
+
+-- ======================
 -- 🔐 Activar seguridad (RLS)
 -- ======================
 alter table usuarios enable row level security;
@@ -116,3 +130,4 @@ alter table asistencia enable row level security;
 alter table estadisticas enable row level security;
 alter table noticias enable row level security;
 alter table resultados_finales enable row level security;
+alter table desglose_puntos enable row level security;
