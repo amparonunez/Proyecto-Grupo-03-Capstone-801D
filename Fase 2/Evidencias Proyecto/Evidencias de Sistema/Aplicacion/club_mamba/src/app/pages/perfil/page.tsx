@@ -3,12 +3,89 @@
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
+import { supabase } from "@/lib/supabaseClient";
+
+type Perfil = {
+  id: string;
+  nombre: string;
+  rol?: string;
+  puesto?: string;
+  nivel?: string;
+  peso?: number | string;
+  talla_uniforme?: string;
+  contacto_de_emergencia?: string;
+  estatura?: string | number;
+  email?: string;
+};
 
 export default function PerfilPage() {
   const [activeTab, setActiveTab] = useState<"datos" | "estadisticas">("datos");
+  const [perfil, setPerfil] = useState<Perfil | null>(null);
+  const [userEmail, setUserEmail] = useState("");
+  const [loadingPerfil, setLoadingPerfil] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchPerfil = async () => {
+      try {
+        setLoadingPerfil(true);
+        setError("");
+
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError) {
+          setError(userError.message);
+          setLoadingPerfil(false);
+          return;
+        }
+
+        if (!user) {
+          setLoadingPerfil(false);
+          return;
+        }
+
+        setUserEmail(user.email ?? "");
+
+        const res = await fetch("/api/usuarios/datos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: user.id }),
+        });
+
+        const result = await res.json();
+
+        if (res.ok && result.data) {
+          setPerfil(result.data);
+        } else {
+          setError(result.error || "No se pudieron cargar los datos del perfil.");
+        }
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Ocurrió un error al cargar el perfil."
+        );
+      } finally {
+        setLoadingPerfil(false);
+      }
+    };
+
+    fetchPerfil();
+  }, []);
+
+  const tieneValor = (valor: string | number | null | undefined) =>
+    valor !== null && valor !== undefined && valor !== "";
+
+  const formatearDato = (
+    valor: string | number | null | undefined,
+    fallback = "No disponible"
+  ) => (tieneValor(valor) ? valor : fallback);
 
   return (
     <AuthGuard allowedRoles={["jugador", "entrenador"]}>
@@ -31,8 +108,14 @@ export default function PerfilPage() {
                 />
               </div>
 
-              <h2 className="text-2xl font-semibold mb-1">Javier Contreras</h2>
-              <p className="text-sm text-neutral-400">Jugador del equipo senior</p>
+              <h2 className="text-2xl font-semibold mb-1">
+                {formatearDato(perfil?.nombre, "Perfil sin nombre")}
+              </h2>
+              <p className="text-sm text-neutral-400">
+                {perfil?.rol === "entrenador"
+                  ? "Entrenador del club"
+                  : "Jugador del equipo"}
+              </p>
 
               {/* Botones de pestañas */}
               <div className="flex gap-4 mt-8">
@@ -68,58 +151,81 @@ export default function PerfilPage() {
                     Datos del perfil
                   </h3>
 
+                  {loadingPerfil && (
+                    <p className="text-neutral-400">Cargando datos...</p>
+                  )}
+
+                  {error && (
+                    <p className="text-red-400 text-sm mb-4">{error}</p>
+                  )}
+
                   {/* GRILLA DE DATOS */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+                  {!loadingPerfil && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
 
-                    {/* Correo */}
-                    <div className="flex flex-col">
-                      <span className="text-neutral-400 mb-1">Correo electrónico</span>
-                      <span className="font-medium">javio@example.com</span>
+                      {/* Correo */}
+                      <div className="flex flex-col">
+                        <span className="text-neutral-400 mb-1">Correo electrónico</span>
+                        <span className="font-medium">
+                          {formatearDato(userEmail || perfil?.email, "Sin correo registrado")}
+                        </span>
+                      </div>
+
+                      {/* Posición */}
+                      <div className="flex flex-col">
+                        <span className="text-neutral-400 mb-1">Posición</span>
+                        <span className="font-medium">
+                          {formatearDato(perfil?.puesto, "Sin definir")}
+                        </span>
+                      </div>
+
+                      {/* Estatus */}
+                      <div className="flex flex-col">
+                        <span className="text-neutral-400 mb-1">Estatus</span>
+                        <span className="text-green-500 font-semibold">Activo</span>
+                      </div>
+
+                      {/* Nivel */}
+                      <div className="flex flex-col">
+                        <span className="text-neutral-400 mb-1">Nivel</span>
+                        <span className="font-medium">
+                          {formatearDato(perfil?.nivel, "No registrado")}
+                        </span>
+                      </div>
+
+                      {/* Estatura */}
+                      <div className="flex flex-col">
+                        <span className="text-neutral-400 mb-1">Estatura</span>
+                        <span className="font-medium">
+                          {formatearDato(perfil?.estatura, "No registrada")}
+                        </span>
+                      </div>
+
+                      {/* Peso */}
+                      <div className="flex flex-col">
+                        <span className="text-neutral-400 mb-1">Peso</span>
+                        <span className="font-medium">
+                          {perfil?.peso ? `${perfil.peso} kg` : "No registrado"}
+                        </span>
+                      </div>
+
+                      {/* Talla uniforme */}
+                      <div className="flex flex-col">
+                        <span className="text-neutral-400 mb-1">Talla de uniforme</span>
+                        <span className="font-medium">
+                          {formatearDato(perfil?.talla_uniforme, "No registrada")}
+                        </span>
+                      </div>
+
+                      {/* Contacto emergencia */}
+                      <div className="flex flex-col">
+                        <span className="text-neutral-400 mb-1">Contacto de emergencia</span>
+                        <span className="font-medium">
+                          {formatearDato(perfil?.contacto_de_emergencia, "No registrado")}
+                        </span>
+                      </div>
                     </div>
-
-                    {/* Posición */}
-                    <div className="flex flex-col">
-                      <span className="text-neutral-400 mb-1">Posición</span>
-                      <span className="font-medium">Escolta</span>
-                    </div>
-
-                    {/* Estatus */}
-                    <div className="flex flex-col">
-                      <span className="text-neutral-400 mb-1">Estatus</span>
-                      <span className="text-green-500 font-semibold">Activo</span>
-                    </div>
-
-                    {/* Nivel */}
-                    <div className="flex flex-col">
-                      <span className="text-neutral-400 mb-1">Nivel</span>
-                      <span className="font-medium">Avanzado</span>
-                    </div>
-
-                    {/* Estatura */}
-                    <div className="flex flex-col">
-                      <span className="text-neutral-400 mb-1">Estatura</span>
-                      <span className="font-medium">178 cm</span>
-                    </div>
-
-                    {/* Peso */}
-                    <div className="flex flex-col">
-                      <span className="text-neutral-400 mb-1">Peso</span>
-                      <span className="font-medium">72 kg</span>
-                    </div>
-
-                    {/* Talla uniforme */}
-                    <div className="flex flex-col">
-                      <span className="text-neutral-400 mb-1">Talla de uniforme</span>
-                      <span className="font-medium">L</span>
-                    </div>
-
-                    {/* Contacto emergencia */}
-                    <div className="flex flex-col">
-                      <span className="text-neutral-400 mb-1">Contacto de emergencia</span>
-                      <span className="font-medium">+56 9 1234 5678 (Madre)</span>
-                    </div>
-
-                  </div>
+                  )}
 
                   {/* Botón editar */}
                   <div className="mt-10">

@@ -98,18 +98,18 @@ export default function EntrenamientosPage() {
       <div className="min-h-screen bg-black text-white flex flex-col">
         <Nav />
 
-        <main className="flex flex-col items-center py-16 flex-grow">
-          <h1 className="text-5xl font-bold text-center mb-12 text-white">
+        <main className="flex flex-col items-center py-12 px-4 md:px-8 flex-grow">
+          <h1 className="text-4xl md:text-5xl font-bold text-center mb-10 md:mb-12 text-white">
             ENTRENAMIENTOS Y PARTIDOS
           </h1>
 
-          <section className="w-[1000px] bg-[#181818] rounded-2xl shadow-2xl p-10 border border-gray-800">
+          <section className="w-full max-w-5xl bg-[#181818] rounded-2xl shadow-2xl p-6 md:p-10 border border-gray-800">
             {eventos.length === 0 ? (
               <p className="text-gray-400 text-center">
                 No hay eventos disponibles.
               </p>
             ) : (
-              <div className="grid grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 {eventos.map((evento) => {
                   const fechaHora = new Date(`${evento.fecha}T${evento.hora}`);
 
@@ -127,7 +127,7 @@ export default function EntrenamientosPage() {
                     <div
                       key={evento.id}
                       onClick={() => setEventoSeleccionado(evento)}
-                      className="bg-[#1E1E1E] p-6 rounded-2xl border border-gray-700 hover:border-yellow-400 transition-all cursor-pointer hover:scale-105"
+                      className="bg-[#1E1E1E] p-6 rounded-2xl border border-gray-700 hover:border-yellow-400 transition-all cursor-pointer hover:scale-[1.02]"
                     >
                       <div className="flex items-center gap-3 mb-3">
                         {evento.tipo === "Partido" ? (
@@ -169,7 +169,7 @@ export default function EntrenamientosPage() {
 
           <div className="flex justify-center mt-10">
             {rol === "entrenador" && (
-              <button className="bg-yellow-500 text-black font-semibold px-6 py-3 rounded-full shadow-md hover:bg-yellow-400 transition">
+              <button className="bg-yellow-500 text-black font-semibold px-6 py-3 rounded-full shadow-md hover:bg-yellow-400 transition w-full sm:w-auto">
                 <Link href="/pages/crear_partido_entrenamiento">
                   Agregar evento
                 </Link>
@@ -187,7 +187,7 @@ export default function EntrenamientosPage() {
             onClick={() => setEventoSeleccionado(null)}
           >
             <div
-              className="bg-[#1E1E1E] p-8 rounded-2xl shadow-xl border border-yellow-400 w-[400px] text-center animate-modalOpen"
+              className="bg-[#1E1E1E] p-6 md:p-8 rounded-2xl shadow-xl border border-yellow-400 w-[90vw] max-w-md text-center animate-modalOpen mx-4"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-center mb-4">
