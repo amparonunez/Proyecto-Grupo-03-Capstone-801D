@@ -13,7 +13,20 @@ export async function POST(req) {
 
     const { data, error } = await supabaseAdmin
       .from("usuarios")
-      .select("id, nombre, rol, nivel") // agrega más columnas si quieres
+      .select(
+        `
+        id,
+        nombre,
+        apellidos,
+        rol,
+        puesto,
+        nivel,
+        estatura,
+        peso,
+        talla_uniforme,
+        contacto_emergencia
+      `
+      ) // agrega más columnas si quieres
       .eq("id", id)
       .single();
 

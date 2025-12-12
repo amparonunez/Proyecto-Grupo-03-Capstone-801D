@@ -4,7 +4,15 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Nav from "@/components/ui/nav";
 import Footer from "@/components/ui/footer";
-import { Camera, Mail, Lock, User } from "lucide-react";
+import {
+  Camera,
+  Mail,
+  Lock,
+  User,
+  Ruler,
+  Weight,
+  Phone,
+} from "lucide-react";
 import AuthGuard from "@/components/AuthGuard";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -13,11 +21,16 @@ export default function EditarPerfilPage() {
   const [fotoFile, setFotoFile] = useState(null);
   const [formData, setFormData] = useState({
     nombre: "",
-    apellido: "",
+    apellidos: "",
     email: "",
     password: "",
+    estatura: "",
+    peso: "",
+    talla_uniforme: "",
+    contacto_emergencia: "",
   });
   const [loading, setLoading] = useState(true);
+  const tallaOptions = ["XS", "S", "M", "L", "XL", "XXL"];
 
   // ✅ Cargar datos del usuario logueado desde API segura
   useEffect(() => {
@@ -40,9 +53,13 @@ export default function EditarPerfilPage() {
 
         setFormData({
           nombre: data.nombre || "",
-          apellido: data.apellidos || "",
+          apellidos: data.apellidos || "",
           email: data.email || "",
           password: "",
+          estatura: data.estatura ? String(data.estatura) : "",
+          peso: data.peso ? String(data.peso) : "",
+          talla_uniforme: data.talla_uniforme || "",
+          contacto_emergencia: data.contacto_emergencia || "",
         });
 
         // ✅ Si hay foto en la DB, usarla; si no, usar la predeterminada
@@ -202,12 +219,12 @@ export default function EditarPerfilPage() {
               </div>
               <div>
                 <label className="text-yellow-400 font-semibold mb-2 block">
-                  <User className="inline w-4 h-4 mr-2" /> Apellido
+                  <User className="inline w-4 h-4 mr-2" /> Apellidos
                 </label>
                 <input
                   type="text"
-                  name="apellido"
-                  value={formData.apellido}
+                  name="apellidos"
+                  value={formData.apellidos}
                   onChange={handleChange}
                   className="w-full p-3 bg-[#1E1E1E] border border-gray-700 rounded-lg text-white"
                 />
@@ -239,6 +256,73 @@ export default function EditarPerfilPage() {
                 className="w-full p-3 bg-[#1E1E1E] border border-gray-700 rounded-lg text-white"
                 placeholder="(opcional)"
               />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+              <div>
+                <label className="text-yellow-400 font-semibold mb-2 block">
+                  <Ruler className="inline w-4 h-4 mr-2" /> Estatura (cm)
+                </label>
+                <input
+                  type="number"
+                  name="estatura"
+                  value={formData.estatura}
+                  onChange={handleChange}
+                  className="w-full p-3 bg-[#1E1E1E] border border-gray-700 rounded-lg text-white"
+                  placeholder="Ej: 178"
+                  min="0"
+                />
+              </div>
+
+              <div>
+                <label className="text-yellow-400 font-semibold mb-2 block">
+                  <Weight className="inline w-4 h-4 mr-2" /> Peso (kg)
+                </label>
+                <input
+                  type="number"
+                  name="peso"
+                  value={formData.peso}
+                  onChange={handleChange}
+                  className="w-full p-3 bg-[#1E1E1E] border border-gray-700 rounded-lg text-white"
+                  placeholder="Ej: 72"
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+              <div>
+                <label className="text-yellow-400 font-semibold mb-2 block">
+                  <Ruler className="inline w-4 h-4 mr-2" /> Talla de uniforme
+                </label>
+                <select
+                  name="talla_uniforme"
+                  value={formData.talla_uniforme}
+                  onChange={handleChange}
+                  className="w-full p-3 bg-[#1E1E1E] border border-gray-700 rounded-lg text-white"
+                >
+                  <option value="">Selecciona tu talla</option>
+                  {tallaOptions.map((option) => (
+                    <option key={option} value={option}>
+                      ✓ Talla {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-yellow-400 font-semibold mb-2 block">
+                  <Phone className="inline w-4 h-4 mr-2" /> Contacto de emergencia
+                </label>
+                <input
+                  type="tel"
+                  name="contacto_emergencia"
+                  value={formData.contacto_emergencia}
+                  onChange={handleChange}
+                  className="w-full p-3 bg-[#1E1E1E] border border-gray-700 rounded-lg text-white"
+                  placeholder="+56 9 1234 5678"
+                />
+              </div>
             </div>
 
             <div className="flex justify-center mt-10">

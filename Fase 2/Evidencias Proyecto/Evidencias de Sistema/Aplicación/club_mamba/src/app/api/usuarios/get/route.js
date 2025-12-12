@@ -29,7 +29,17 @@ export async function GET(req) {
     // Obtener datos del usuario desde la tabla
     const { data, error } = await supabaseAdmin
       .from("usuarios")
-      .select("nombre, apellidos, foto_perfil")
+      .select(
+        `
+        nombre,
+        apellidos,
+        foto_perfil,
+        estatura,
+        peso,
+        talla_uniforme,
+        contacto_emergencia
+      `
+      )
       .eq("id", user.id)
       .single();
 
@@ -41,6 +51,10 @@ export async function GET(req) {
       nombre: data.nombre,
       apellidos: data.apellidos,
       foto_perfil: data.foto_perfil,
+      estatura: data.estatura,
+      peso: data.peso,
+      talla_uniforme: data.talla_uniforme,
+      contacto_emergencia: data.contacto_emergencia,
     });
   } catch (err) {
     console.error("Error en /api/usuarios/get:", err);

@@ -9,7 +9,18 @@ const supabaseAdmin = createClient(
 
 export async function POST(req) {
   try {
-    const { nombre, apellido, email, password, fotoUrl } = await req.json();
+    const {
+      nombre,
+      apellidos,
+      apellido, // compatibilidad con payload antiguo
+      email,
+      password,
+      fotoUrl,
+      estatura,
+      peso,
+      talla_uniforme,
+      contacto_emergencia,
+    } = await req.json();
 
     // Obtener token del usuario (solo para saber quién es)
     const authHeader = req.headers.get("Authorization");
@@ -35,13 +46,36 @@ export async function POST(req) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     // 🧠 Actualizar datos del usuario en la tabla (con Service Role)
+    const estaturaNumber =
+      estatura === null || estatura === undefined
+        ? null
+        : Number.isFinite(Number(estatura))
+        ? Number(estatura)
+        : null;
+    const pesoNumber =
+      peso === null || peso === undefined
+        ? null
+        : Number.isFinite(Number(peso))
+        ? Number(peso)
+        : null;
+
+    const payload = {
+      nombre,
+      apellidos: apellidos ?? apellido,
+      estatura: estaturaNumber,
+      peso: pesoNumber,
+      talla_uniforme: talla_uniforme ?? null,
+      contacto_emergencia: contacto_emergencia ?? null,
+      ...(fotoUrl && { foto_perfil: fotoUrl }), // URL pública del Storage
+    };
+
+    const cleanedPayload = Object.fromEntries(
+      Object.entries(payload).filter(([, value]) => value !== undefined)
+    );
+
     const { error: updateError } = await supabaseAdmin
       .from("usuarios")
-      .update({
-        nombre,
-        apellidos: apellido,
-        ...(fotoUrl && { foto_perfil: fotoUrl }), // URL pública del Storage
-      })
+      .update(cleanedPayload)
       .eq("id", user.id);
 
     if (updateError) throw updateError;
