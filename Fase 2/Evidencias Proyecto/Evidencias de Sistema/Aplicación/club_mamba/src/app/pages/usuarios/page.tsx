@@ -102,14 +102,19 @@ export default function UsuariosPage() {
       <div className="min-h-screen bg-black text-white flex flex-col">
         <Nav />
 
-        <main className="flex flex-col items-center py-16 flex-1">
-          <h1 className="text-5xl font-bold mb-12">JUGADORES REGISTRADOS</h1>
+        <main className="flex flex-col items-center py-12 px-4 md:px-8 flex-1 w-full">
+          <h1 className="text-4xl md:text-5xl font-bold mb-10 md:mb-12 text-center">
+            JUGADORES REGISTRADOS
+          </h1>
 
-          <section className="bg-[#181818] w-[900px] rounded-2xl shadow-2xl p-10 border border-gray-800">
-            <div className="flex justify-between text-yellow-400 text-lg font-semibold mb-4 border-b border-gray-700 pb-2">
+          <section className="bg-[#181818] w-full max-w-5xl rounded-2xl shadow-2xl p-6 md:p-10 border border-gray-800">
+            <div className="hidden md:grid grid-cols-3 text-yellow-400 text-lg font-semibold mb-4 border-b border-gray-700 pb-2">
               <span>Jugador</span>
               <span>Estado</span>
               <span>Nivel</span>
+            </div>
+            <div className="md:hidden text-sm text-gray-400 mb-4">
+              Toca un jugador para ver y editar sus datos.
             </div>
 
             {jugadores.length === 0 ? (
@@ -122,7 +127,7 @@ export default function UsuariosPage() {
                   <li
                     key={jugador.id}
                     onClick={() => setSelectedUser(jugador)}
-                    className="flex justify-between items-center py-3 px-5 bg-[#1E1E1E] rounded-xl hover:bg-[#252525] transition cursor-pointer"
+                    className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 py-3 px-5 bg-[#1E1E1E] rounded-xl hover:bg-[#252525] transition cursor-pointer"
                   >
                     <div className="flex items-center gap-4">
                       {jugador.foto_perfil ? (
@@ -148,6 +153,7 @@ export default function UsuariosPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400 sm:hidden">Estado:</span>
                       <div
                         className={`w-3 h-3 rounded-full ${
                           jugador.inscrito ? "bg-green-500" : "bg-red-500"
@@ -156,9 +162,10 @@ export default function UsuariosPage() {
                       ></div>
                     </div>
 
-                    <span className="text-yellow-400 capitalize">
-                      {jugador.nivel}
-                    </span>
+                    <div className="flex justify-between w-full sm:w-auto sm:block text-sm text-gray-400 sm:text-base">
+                      <span className="sm:hidden mr-2">Nivel:</span>
+                      <span className="text-yellow-400 capitalize">{jugador.nivel}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -174,7 +181,7 @@ export default function UsuariosPage() {
                 exit={{ opacity: 0 }}
               >
                 <motion.div
-                  className="bg-[#181818] w-[500px] p-8 rounded-2xl border border-gray-700 shadow-2xl relative"
+                  className="bg-[#181818] w-[90vw] max-w-lg p-6 md:p-8 rounded-2xl border border-gray-700 shadow-2xl relative mx-4"
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}

@@ -21,12 +21,24 @@ type Perfil = {
   email?: string;
 };
 
+type Estadisticas = {
+  partidos_jugados?: number;
+  total_puntos?: number;
+  total_rebotes?: number;
+  total_asistencias?: number;
+  total_robos?: number;
+  total_bloqueos?: number;
+};
+
 export default function PerfilPage() {
   const [activeTab, setActiveTab] = useState<"datos" | "estadisticas">("datos");
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [userEmail, setUserEmail] = useState("");
   const [loadingPerfil, setLoadingPerfil] = useState(true);
   const [error, setError] = useState("");
+  const [estadisticas, setEstadisticas] = useState<Estadisticas | null>(null);
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [statsError, setStatsError] = useState("");
 
   useEffect(() => {
     const fetchPerfil = async () => {
@@ -78,6 +90,39 @@ export default function PerfilPage() {
 
     fetchPerfil();
   }, []);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!perfil?.id) return;
+      try {
+        setLoadingStats(true);
+        setStatsError("");
+
+        const res = await fetch("/api/usuarios/ver_estadisticas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: perfil.id }),
+        });
+
+        const result = await res.json();
+        if (res.ok && result.data) {
+          setEstadisticas(result.data);
+        } else {
+          setStatsError(result.error || "No se pudieron cargar las estadísticas.");
+        }
+      } catch (err) {
+        setStatsError(
+          err instanceof Error
+            ? err.message
+            : "Ocurrió un error al cargar las estadísticas."
+        );
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+
+    fetchStats();
+  }, [perfil?.id]);
 
   const tieneValor = (valor: string | number | null | undefined) =>
     valor !== null && valor !== undefined && valor !== "";
@@ -240,38 +285,55 @@ export default function PerfilPage() {
                     Estadísticas del jugador
                   </h3>
 
-                  {/* ESTADÍSTICAS */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-center">
-                    <div className="bg-neutral-800 rounded-lg p-4">
-                      <p className="text-3xl font-bold text-yellow-500">24</p>
-                      <p className="text-sm text-neutral-400 mt-1">Partidos</p>
-                    </div>
+                  {loadingStats ? (
+                    <p className="text-neutral-400">Cargando estadísticas...</p>
+                  ) : statsError ? (
+                    <p className="text-red-400 text-sm mb-4">{statsError}</p>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-center">
+                      <div className="bg-neutral-800 rounded-lg p-4">
+                        <p className="text-3xl font-bold text-yellow-500">
+                          {estadisticas?.partidos_jugados ?? 0}
+                        </p>
+                        <p className="text-sm text-neutral-400 mt-1">Partidos</p>
+                      </div>
 
-                    <div className="bg-neutral-800 rounded-lg p-4">
-                      <p className="text-3xl font-bold text-yellow-500">312</p>
-                      <p className="text-sm text-neutral-400 mt-1">Puntos</p>
-                    </div>
+                      <div className="bg-neutral-800 rounded-lg p-4">
+                        <p className="text-3xl font-bold text-yellow-500">
+                          {estadisticas?.total_puntos ?? 0}
+                        </p>
+                        <p className="text-sm text-neutral-400 mt-1">Puntos</p>
+                      </div>
 
-                    <div className="bg-neutral-800 rounded-lg p-4">
-                      <p className="text-3xl font-bold text-yellow-500">58</p>
-                      <p className="text-sm text-neutral-400 mt-1">Asistencias</p>
-                    </div>
+                      <div className="bg-neutral-800 rounded-lg p-4">
+                        <p className="text-3xl font-bold text-yellow-500">
+                          {estadisticas?.total_asistencias ?? 0}
+                        </p>
+                        <p className="text-sm text-neutral-400 mt-1">Asistencias</p>
+                      </div>
 
-                    <div className="bg-neutral-800 rounded-lg p-4">
-                      <p className="text-3xl font-bold text-yellow-500">40</p>
-                      <p className="text-sm text-neutral-400 mt-1">Rebotes</p>
-                    </div>
+                      <div className="bg-neutral-800 rounded-lg p-4">
+                        <p className="text-3xl font-bold text-yellow-500">
+                          {estadisticas?.total_rebotes ?? 0}
+                        </p>
+                        <p className="text-sm text-neutral-400 mt-1">Rebotes</p>
+                      </div>
 
-                    <div className="bg-neutral-800 rounded-lg p-4">
-                      <p className="text-3xl font-bold text-yellow-500">18</p>
-                      <p className="text-sm text-neutral-400 mt-1">Robos</p>
-                    </div>
+                      <div className="bg-neutral-800 rounded-lg p-4">
+                        <p className="text-3xl font-bold text-yellow-500">
+                          {estadisticas?.total_robos ?? 0}
+                        </p>
+                        <p className="text-sm text-neutral-400 mt-1">Robos</p>
+                      </div>
 
-                    <div className="bg-neutral-800 rounded-lg p-4">
-                      <p className="text-3xl font-bold text-yellow-500">3</p>
-                      <p className="text-sm text-neutral-400 mt-1">Bloqueos</p>
+                      <div className="bg-neutral-800 rounded-lg p-4">
+                        <p className="text-3xl font-bold text-yellow-500">
+                          {estadisticas?.total_bloqueos ?? 0}
+                        </p>
+                        <p className="text-sm text-neutral-400 mt-1">Bloqueos</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </>
               )}
             </div>

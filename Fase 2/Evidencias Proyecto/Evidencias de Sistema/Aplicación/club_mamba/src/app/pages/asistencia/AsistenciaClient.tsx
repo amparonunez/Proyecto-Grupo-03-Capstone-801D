@@ -122,10 +122,10 @@ export default function AsistenciaClient() {
       <div className="min-h-screen bg-gray-100">
         <Nav />
 
-        <main className="min-h-screen bg-black text-white flex flex-col items-center py-16">
-          <h1 className="text-5xl font-bold text-center mb-12 text-white">ASISTENCIA</h1>
+        <main className="min-h-screen bg-black text-white flex flex-col items-center py-12 px-4 md:px-8">
+          <h1 className="text-4xl md:text-5xl font-bold text-center mb-10 md:mb-12 text-white">ASISTENCIA</h1>
 
-          <section className="w-[1000px] bg-[#181818] rounded-2xl shadow-2xl p-10 border border-gray-800">
+          <section className="w-full max-w-5xl bg-[#181818] rounded-2xl shadow-2xl p-6 md:p-10 border border-gray-800">
             {loading ? (
               <div className="text-center">
                 <p className="text-gray-400 mb-2">Cargando eventos...</p>
@@ -179,11 +179,11 @@ export default function AsistenciaClient() {
                         </p>
                       )}
 
-                      <div className="flex justify-between items-center pt-4 border-t border-gray-700">
+                      <div className="flex flex-col gap-3 md:flex-row md:gap-0 justify-between items-center pt-4 border-t border-gray-700">
                         {rol === "entrenador" && (
                           <Link
                             href={`/pages/registrar_asistencia?id=${evento.id}`}
-                            className="flex-1 mr-2"
+                            className="w-full md:flex-1 md:mr-2"
                           >
                             <button className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300">
                               Registrar Asistencia
@@ -193,7 +193,11 @@ export default function AsistenciaClient() {
 
                         <Link
                           href={`/pages/visualizar_asistencia?id=${evento.id}`}
-                          className={rol === "entrenador" ? "flex-1 ml-2" : "flex-1"}
+                          className={
+                            rol === "entrenador"
+                              ? "w-full md:flex-1 md:ml-2"
+                              : "w-full md:flex-1"
+                          }
                         >
                           <button className="w-full bg-transparent border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black font-semibold py-2 px-4 rounded-lg transition duration-300">
                             Ver Asistencia
