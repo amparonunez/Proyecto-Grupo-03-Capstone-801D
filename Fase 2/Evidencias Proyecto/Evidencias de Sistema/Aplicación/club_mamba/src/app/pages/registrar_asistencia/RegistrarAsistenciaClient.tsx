@@ -219,8 +219,8 @@ export default function RegistrarAsistenciaClient() {
   const comenzarPartido = () => {
     const presentes = jugadores.filter(j => j.presente);
     
-    if (presentes.length < 2) {
-      alert("Se necesitan al menos 2 jugadores presentes para iniciar el partido");
+    if (presentes.length < 5) {
+      alert("Se necesitan al menos 5 jugadores presentes para iniciar el partido");
       return;
     }
 
@@ -419,15 +419,15 @@ export default function RegistrarAsistenciaClient() {
                       <div className="flex justify-center">
                         <button
                           onClick={comenzarPartido}
-                          disabled={jugadores.filter(j => j.presente).length < 2}
+                          disabled={jugadores.filter(j => j.presente).length < 5}
                           className={`${
-                            jugadores.filter(j => j.presente).length < 2 
+                            jugadores.filter(j => j.presente).length < 5 
                               ? "bg-gray-600 cursor-not-allowed" 
                               : "bg-yellow-500 hover:bg-yellow-400 transform hover:scale-105"
                           } text-black font-bold py-3 px-8 rounded-xl text-lg transition-all shadow-lg`}
                         >
-                          {jugadores.filter(j => j.presente).length < 2 
-                            ? `Mínimo 2 jugadores (faltan ${2 - jugadores.filter(j => j.presente).length})` 
+                          {jugadores.filter(j => j.presente).length < 5 
+                            ? `Mínimo 5 jugadores (faltan ${5 - jugadores.filter(j => j.presente).length})` 
                             : "🎯 Iniciar Partido"}
                         </button>
                       </div>
